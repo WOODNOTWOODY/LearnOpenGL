@@ -4,6 +4,8 @@ set(TARGET_NAME game)
 
 # include files
 set(INCLUDE_FILES
+	${BLADE_DEP_PATH}/glfw/include
+	${BLADE_DEP_PATH}/glad/include
 	${BLADE_PATH}
 )
 
@@ -15,6 +17,6 @@ set(ALL_FILES ${HEADER_FILES} ${SOURCE_FILES})
 
 use_precompiled_header("${CMAKE_CURRENT_SOURCE_DIR}/StdAfx.h" "${CMAKE_CURRENT_SOURCE_DIR}/StdAfx.cpp" SOURCE_FILES)
 
-add_executable(${TARGET_NAME} WIN32 ${ALL_FILES})
+add_executable(${TARGET_NAME} ${ALL_FILES})
 
 message(STATUS "Configure success!")
