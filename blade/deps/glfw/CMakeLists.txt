@@ -10,8 +10,8 @@ set(common_HEADERS
 	${BLADE_DEP_PATH}/glfw/src/internal.h 
 	${BLADE_DEP_PATH}/glfw/src/mappings.h
     ${BLADE_DEP_PATH}/glfw/src/glfw_config.h
-    ${BLADE_DEP_PATH}/glfw/include/glfw3.h
-    ${BLADE_DEP_PATH}/glfw/include/glfw3native.h
+    ${BLADE_DEP_PATH}/glfw/include/GLFW/glfw3.h
+    ${BLADE_DEP_PATH}/glfw/include/GLFW/glfw3native.h
 )
 set(common_SOURCES 
 	${BLADE_DEP_PATH}/glfw/src/context.c 
@@ -50,6 +50,8 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                       SOVERSION ${GLFW_VERSION_MAJOR}
                       POSITION_INDEPENDENT_CODE ON
                       FOLDER deps)
+					 
+target_compile_definitions(${TARGET_NAME} PRIVATE _GLFW_USE_CONFIG_H)
 					  
 message(STATUS "Configure success!")
 

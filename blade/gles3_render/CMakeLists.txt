@@ -25,7 +25,7 @@ endif()
 
 set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME blade_gles3_render)
 
-use_precompiled_header("${CMAKE_CURRENT_SOURCE_DIR}/GLES3RenderStd.h" "${CMAKE_CURRENT_SOURCE_DIR}/GLES3Render.cpp" SOURCE_FILES)
+use_precompiled_header("${CMAKE_CURRENT_SOURCE_DIR}/GLES3RenderStd.h" "${CMAKE_CURRENT_SOURCE_DIR}/GLES3RenderStd.cpp" SOURCE_FILES)
 
 message(STATUS "Configure success!")
 
