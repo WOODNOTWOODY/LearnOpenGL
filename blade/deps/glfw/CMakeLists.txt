@@ -4,7 +4,7 @@ set(GLFW_VERSION_MAJOR "3")
 set(GLFW_VERSION_MINOR "3")
 set(GLFW_VERSION "${GLFW_VERSION_MAJOR}.${GLFW_VERSION_MINOR}")
 
-set(TARGET_NAME glfw3)
+set(TARGET_NAME glfw)
 
 set(common_HEADERS 
 	${BLADE_DEP_PATH}/glfw/src/internal.h 
@@ -52,6 +52,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES
                       FOLDER deps)
 					 
 target_compile_definitions(${TARGET_NAME} PRIVATE _GLFW_USE_CONFIG_H)
+
+if (MSVC)
+    target_compile_definitions(${TARGET_NAME} PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
 					  
 message(STATUS "Configure success!")
 

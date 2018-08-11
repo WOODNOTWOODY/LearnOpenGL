@@ -6,6 +6,7 @@ set(TARGET_NAME gles3_render)
 set(INCLUDE_FILES
 	${BLADE_DEP_PATH}/glfw/include
 	${BLADE_DEP_PATH}/glad/include
+	${BLADE_PATH}/core
 	${BLADE_PATH}/gles3_render
 )
 
@@ -22,6 +23,9 @@ if(BLADE_STATIC)
 else()
 	add_library(${TARGET_NAME} SHARED ${ALL_FILES})
 endif()
+
+target_link_libraries(${TARGET_NAME} ${BLADE_DEP_TARGETS})
+target_link_libraries(${TARGET_NAME} core opengl32.lib)
 
 set_target_properties(${TARGET_NAME} PROPERTIES OUTPUT_NAME blade_gles3_render)
 
