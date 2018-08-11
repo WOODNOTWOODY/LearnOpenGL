@@ -9,9 +9,9 @@ BLADE_NAMESPACE_BEGIN
 
 enum ClearMask
 {
-	CM_COLOR = 0x00000001,
-	CM_DEPTH = 0x00000002,
-	CM_STENCIL = 0x00000004,
+	CM_COLOR = 0x1,
+	CM_DEPTH = 0x2,
+	CM_STENCIL = 0x4,
 };
 
 class BLADE_GLES3RENDER_API RenderEngine : public Singleton < RenderEngine >

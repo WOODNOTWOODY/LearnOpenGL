@@ -68,6 +68,7 @@ public:
 	inline GLuint                     getVAOHandle() const { return m_glVAO; }
 	inline GLenum                     getGLPrimitiveMode() const { return m_glPrimitiveMode; }
 	inline GLenum                     getGLIndexType() const { return m_glIndexType; }
+	inline GLenum                     getGLProgram() const { return m_glProgram; }
 
 	bool                              initialize(const VertexElementList& vertElements, ShaderProgram* program);
 	void                              destroy();

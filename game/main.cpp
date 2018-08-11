@@ -27,18 +27,18 @@ int main(int argc, char *argv[])
 	// load shaders
 	using namespace Blade;
 	Buffer buff1, buff2;
-	PathUtil::getFileData(buff1, "vertex_shader.txt");
-	PathUtil::getFileData(buff2, "fragment_shader.txt");
+	PathUtil::getFileData(buff1, "vertex_shader.txt", true);
+	PathUtil::getFileData(buff2, "fragment_shader.txt", true);
 	std::vector<Blade::Shader*> shaders;
 	Shader* shader1 = BLADE_NEW(Shader("vertex_shader.txt", ST_VERTEX_SHADER, buff1));
-	Shader* shader2 = BLADE_NEW(Shader("fragment_shader.txt", ST_VERTEX_SHADER, buff2));
+	Shader* shader2 = BLADE_NEW(Shader("fragment_shader.txt", ST_FRAGMENT_SHADER, buff2));
 	shaders.push_back(shader1);
 	shaders.push_back(shader2);
 	ShaderProgram* program = BLADE_NEW(ShaderProgram);
 	program->setShaders(shaders);
-	program->parseParams();
 	program->prepareLink();
 	program->compileAndLinkShaders();
+	program->parseParams();
 	shader1->release();
 	shader2->release();
 
@@ -75,15 +75,16 @@ int main(int argc, char *argv[])
 	// render loop
 	while (renderEngine->getCurrentRenderWindow()->isActive())
 	{
+		// check call events
+		renderEngine->getCurrentRenderWindow()->pollEvents();
+
 		// input
 		renderEngine->getCurrentRenderWindow()->processInput();
 		
 		renderEngine->clearGLColor(0.2f, 0.3f, 0.3f, 1.0f);
 		renderEngine->clear(CM_COLOR);
+		renderEngine->bindGLProgram(layout->getGLProgram());
 		renderEngine->render(layout);
-
-		// check call events
-		renderEngine->getCurrentRenderWindow()->pollEvents();
 
 		// swap the buffers
 		renderEngine->getCurrentRenderWindow()->swapBuffers();

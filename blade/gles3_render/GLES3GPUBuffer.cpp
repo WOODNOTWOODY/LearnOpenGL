@@ -42,7 +42,7 @@ bool GPUBuffer::initialize(const GPUBufferDesc& desc)
 
 	switch (m_type)
 	{
-		case GBT_VERTEX: m_glBuffer = GL_ARRAY_BUFFER; break;
+	case GBT_VERTEX: m_glTarget = GL_ARRAY_BUFFER; break;
 		case GBT_INDEX: m_glTarget = GL_ELEMENT_ARRAY_BUFFER; break;
 		default:
 		{
