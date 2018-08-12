@@ -44,9 +44,15 @@ int main(int argc, char *argv[])
 
 	// vertex data
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left  
+		0.5f, 0.5f, 0.0f,
 		0.5f, -0.5f, 0.0f, // right 
-		0.0f, 0.5f, 0.0f  // top   
+		-0.5f, -0.5f, 0.0f, // left  
+		-0.5f, 0.5f, 0.0f  // top   
+	};
+
+	uint32 indices[] = {
+		0, 1, 3,
+		1, 2, 3
 	};
 
 	VertexElementList vertElms;
@@ -66,10 +72,20 @@ int main(int argc, char *argv[])
 	GPUBuffer* vbo = BLADE_NEW(GPUBuffer);
 	vbo->initialize(desc);
 
+	GPUBufferDesc desc2;
+	desc2.type = GBT_INDEX;
+	desc2.stride = sizeof(uint32);
+	desc2.size = sizeof(indices);
+	desc2.buffer = indices;
+	desc2.bBak = false;
+	GPUBuffer* ebo = BLADE_NEW(GPUBuffer);
+	ebo->initialize(desc2);
+
 	RenderLayout* layout = BLADE_NEW(RenderLayout);
 	layout->initialize(vertElms, program);
 	layout->setVertexCount(3);
 	layout->setVertexBuffer(0, vbo);
+	layout->setIndexBuffer(ebo);
 	layout->bindGPUBuffers();
 
 	// render loop
