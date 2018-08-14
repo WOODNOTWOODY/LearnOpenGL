@@ -33,6 +33,9 @@ enum ParamType
 	PT_MAT4X2FV,
 	PT_MAT4X3FV,
 	PT_MAT4X4FV,
+	PT_SAMPLER2D,
+	PT_SAMPLER3D,
+	PT_COUNT,
 };
 
 class BLADE_GLES3RENDER_API Attribute
@@ -75,6 +78,27 @@ public:
 	inline GLint                     getGLLocation() const { return m_glLoc; }
 	inline bool                      isDirty() const { return m_bDirty; }
 	inline void                      setDirty(bool flag) { m_bDirty = flag; }
+	inline bool                      isSampler() const { return m_bSampler; }
+
+	inline void                      setData(const Buffer& buff) 
+	{ 
+		uint32 size = std::min(buff.size(), m_size);
+		memcpy(m_buffer, buff.data(), size);
+	}
+
+	template <typename T>
+	inline void				         setValue(const T& data)
+	{
+		uint32 size = std::min((uint32)sizeof(T), m_size);
+		memcpy(m_buffer, &data, size);
+	}
+
+	template <typename T>
+	inline void				         setArray(T* data, uint32 count)
+	{
+		uint32 elmCount = std::min(count, m_count);
+		memcpy(m_data, data, m_elementSize * elmCount);
+	}
 
 private:
 	std::string  m_name;
@@ -84,6 +108,7 @@ private:
 	uint32       m_count;
 	Byte*        m_buffer;
 	bool         m_bDirty;
+	bool         m_bSampler;
 
 	GLenum       m_glType;
 	GLint        m_glLoc;
@@ -138,6 +163,8 @@ private:
 
 typedef std::vector<Shader*> ShaderList;
 
+class Texture;
+
 class BLADE_GLES3RENDER_API ShaderProgram
 {
 public:
@@ -146,6 +173,7 @@ public:
 
 	typedef std::map<std::string, Attribute*> AttrMap;
 	typedef std::map<std::string, Uniform*> UniformMap;
+	typedef std::map<uint32, Texture*> TextureBindMap;
 	
 public:
 	inline uint32                getId() const { return m_id; }
@@ -153,6 +181,7 @@ public:
 	inline GLuint				 getProgramHandle() const { return m_glProgram; }
 	Attribute*                   getAttribute(const std::string& name);
 	Uniform*                     getUniform(const std::string& name);
+	Texture*                     getTexture(uint32 unit) const;
 
 
 	bool                         attachShader(Shader* pShader);
@@ -160,6 +189,7 @@ public:
 	bool                         setShaders(const ShaderList& shaders);
 	bool                         parseParams();
 	void                         bindUniforms();
+	void                         bindTexture(uint32 unit, Texture* texture);
 	void                         bind();
 	void                         unbind();
 
@@ -173,6 +203,7 @@ private:
 	std::string     m_name;
 	AttrMap         m_attrs;
 	UniformMap      m_uniforms;
+	TextureBindMap  m_textures;
 	Shader*         m_shaderList[ST_SHADER_COUNT];
 	bool            m_bLinked;
 	GLuint          m_glProgram;

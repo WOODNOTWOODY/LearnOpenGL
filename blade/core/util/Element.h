@@ -1,6 +1,8 @@
 #ifndef __BLADE_ELEMENT_H__
 #define __BLADE_ELEMENT_H__
 
+#include "Color.h"
+
 BLADE_NAMESPACE_BEGIN
 
 /**
@@ -209,7 +211,7 @@ const ElementFormat  EF_D32_FLOAT = _ELEMENT1<EC_D, 32, ET_UNORM, EFF_FLOAT | EF
 #define ELEMENT_HAS_DEPTH(format)			((ELEMENT_FLAGS(format) & EFF_DEPTH) > 0)
 #define ELEMENT_HAS_STENCIL(format)			((ELEMENT_FLAGS(format) & EFF_STENCIL) > 0)
 
-class ElementUtil
+class BLADE_CORE_API ElementUtil
 {
 public:
 	static std::string			GetFormatName(ElementFormat format);

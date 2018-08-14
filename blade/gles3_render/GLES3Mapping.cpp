@@ -141,6 +141,8 @@ ParamType GLES3Mapping::unmapParamType(GLenum glType)
 		case GL_FLOAT_MAT4x2:		return PT_MAT4X2FV;
 		case GL_FLOAT_MAT4x3:		return PT_MAT4X3FV;
 		case GL_FLOAT_MAT4:			return PT_MAT4X4FV;
+		case GL_SAMPLER_2D:         return PT_SAMPLER2D;
+		case GL_SAMPLER_3D:         return PT_SAMPLER3D;
 		default:
 		{
 			return PT_UNKNOWN;
@@ -209,5 +211,265 @@ uint32 GLES3Mapping::getComponentCount(GLenum glType)
 		}
 	}
 }
+
+GLenum GLES3Mapping::mapTextureType(TextureType type)
+{
+	switch (type)
+	{
+		case TT_1D:			return GL_TEXTURE_2D;
+		case TT_2D:			return GL_TEXTURE_2D;
+		case TT_3D:			return GL_TEXTURE_3D;
+		default:
+		{
+			return GL_TEXTURE_2D;
+		}
+	}
+}
+
+GLenum GLES3Mapping::mapFormat(ElementFormat format)
+{
+	switch (format)
+	{
+		case EF_R8:
+		case EF_R8_SNORM:			return GL_RED;
+		case EF_R8_UINT:
+		case EF_R8_SINT:			return GL_RED_INTEGER;
+
+		case EF_A8:					return GL_ALPHA;
+
+		case EF_RG8:
+		case EF_RG8_SNORM:			return GL_RG;
+		case EF_RG8_UINT:
+		case EF_RG8_SINT:			return GL_RG_INTEGER;
+
+		case EF_RGB8:
+		case EF_RGB8_SNORM:			return GL_RGB;
+		case EF_RGB8_UINT:
+		case EF_RGB8_SINT:			return GL_RGB_INTEGER;
+
+		case EF_RGBA8:
+		case EF_RGBA8_SNORM:		return GL_RGBA;
+		case EF_RGBA8_UINT:
+		case EF_RGBA8_SINT:			return GL_RGBA_INTEGER;
+
+		case EF_RGBA4:
+		case EF_RGB5A1:
+		case EF_RGB10A2:			return GL_RGBA;
+		case EF_RGB10A2_UINT:		return GL_RGBA_INTEGER;
+
+		case EF_R16:
+		case EF_R16_SNORM:
+		case EF_R16_FLOAT:			return GL_RED;
+		case EF_R16_UINT:
+		case EF_R16_SINT:			return GL_RED_INTEGER;
+
+		case EF_RG16:
+		case EF_RG16_SNORM:
+		case EF_RG16_FLOAT:			return GL_RG;
+		case EF_RG16_UINT:
+		case EF_RG16_SINT:			return GL_RG_INTEGER;
+
+		case EF_RGB16:
+		case EF_RGB16_SNORM:
+		case EF_RGB16_FLOAT:		return GL_RGB;
+		case EF_RGB16_UINT:
+		case EF_RGB16_SINT:			return GL_RGB_INTEGER;
+
+		case EF_R5G6B5:				return GL_RGB;
+
+		case EF_RGBA16:
+		case EF_RGBA16_SNORM:
+		case EF_RGBA16_FLOAT:		return GL_RGBA;
+		case EF_RGBA16_UINT:
+		case EF_RGBA16_SINT:		return GL_RGBA_INTEGER;
+
+		case EF_R32_FLOAT:			return GL_RED;
+		case EF_R32_UINT:
+		case EF_R32_SINT:			return GL_RED_INTEGER;
+
+		case EF_RG32_FLOAT:			return GL_RG;
+		case EF_RG32_UINT:
+		case EF_RG32_SINT:			return GL_RG_INTEGER;
+
+		case EF_RGB32_FLOAT:		return GL_RGB;
+		case EF_RGB32_UINT:
+		case EF_RGB32_SINT:			return GL_RGB_INTEGER;
+
+		case EF_RGBA32_FLOAT:		return GL_RGBA;
+		case EF_RGBA32_UINT:
+		case EF_RGBA32_SINT:		return GL_RGBA_INTEGER;
+
+		case EF_D16:				return GL_DEPTH_COMPONENT;
+		case EF_D24:				return GL_DEPTH_COMPONENT;
+		case EF_D24S8:				return GL_DEPTH_STENCIL;
+		case EF_D32_FLOAT:			return GL_DEPTH_COMPONENT;
+
+		default:
+		{
+			return GL_BYTE;
+		}
+	}
+}
+
+GLenum GLES3Mapping::mapInternalFormat(ElementFormat format)
+{
+	switch (format)
+	{
+		case EF_R8:					return GL_R8;
+		case EF_R8_SNORM:			return GL_R8_SNORM;
+		case EF_R8_UINT:			return GL_R8UI;
+		case EF_R8_SINT:			return GL_R8I;
+
+		case EF_A8:					return GL_ALPHA;
+
+		case EF_RG8:				return GL_RG8;
+		case EF_RG8_SNORM:			return GL_RG8_SNORM;
+		case EF_RG8_UINT:			return GL_RG8UI;
+		case EF_RG8_SINT:			return GL_RG8I;
+
+		case EF_RGB8:				return GL_RGB8;
+		case EF_RGB8_SNORM:			return GL_RGB8_SNORM;
+		case EF_RGB8_UINT:			return GL_RGB8UI;
+		case EF_RGB8_SINT:			return GL_RGB8I;
+
+		case EF_RGBA8:				return GL_RGBA8;
+		case EF_RGBA8_SNORM:		return GL_RGBA8_SNORM;
+		case EF_RGBA8_UINT:			return GL_RGBA8UI;
+		case EF_RGBA8_SINT:			return GL_RGBA8I;
+
+		case EF_BGRA8:				return GL_RGBA8;
+
+		case EF_R16_UINT:			return GL_R16UI;
+		case EF_R16_SINT:			return GL_R16I;
+		case EF_R16_FLOAT:			return GL_R16F;
+
+		case EF_RG16_UINT:			return GL_RG16UI;
+		case EF_RG16_SINT:			return GL_RG16I;
+		case EF_RG16_FLOAT:			return GL_RG16F;
+
+		case EF_RGB16_UINT:			return GL_RGB16UI;
+		case EF_RGB16_SINT:			return GL_RGB16I;
+		case EF_RGB16_FLOAT:		return GL_RGB16F;
+
+		case EF_RGBA16_UINT:		return GL_RGBA16UI;
+		case EF_RGBA16_SINT:		return GL_RGBA16I;
+		case EF_RGBA16_FLOAT:		return GL_RGBA16F;
+
+		case EF_R32_UINT:			return GL_R32UI;
+		case EF_R32_SINT:			return GL_R32I;
+		case EF_R32_FLOAT:			return GL_R32F;
+
+		case EF_RG32_UINT:			return GL_RG32UI;
+		case EF_RG32_SINT:			return GL_RG32I;
+		case EF_RG32_FLOAT:			return GL_RG32F;
+
+		case EF_RGB32_UINT:			return GL_RGB32UI;
+		case EF_RGB32_SINT:			return GL_RGB32I;
+		case EF_RGB32_FLOAT:		return GL_RGB32F;
+
+		case EF_RGBA32_UINT:		return GL_RGBA32UI;
+		case EF_RGBA32_SINT:		return GL_RGBA32I;
+		case EF_RGBA32_FLOAT:		return GL_RGBA32F;
+
+		case EF_R5G6B5:				return GL_RGB565;
+		case EF_RGBA4:				return GL_RGBA4;
+		case EF_RGB5A1:				return GL_RGB5_A1;
+		case EF_RGB10A2:			return GL_RGB10_A2;
+		case EF_RGB10A2_UINT:		return GL_RGB10_A2UI;
+
+		case EF_D16:				return GL_DEPTH_COMPONENT16;
+		case EF_D24:				return GL_DEPTH_COMPONENT24;
+		case EF_D24S8:				return GL_DEPTH24_STENCIL8;
+		case EF_D32_FLOAT:			return GL_DEPTH_COMPONENT32F;
+
+		default:
+		{
+			return GL_BYTE;
+		}
+	}
+}
+
+GLint GLES3Mapping::mapAddressMode(AddressMode mode)
+{
+	switch (mode)
+	{
+		case AM_WRAP:		return GL_REPEAT;
+		case AM_MIRROR:		return GL_MIRRORED_REPEAT;
+		case AM_CLAMP:		return GL_CLAMP_TO_EDGE;
+		case AM_BORDER:		return GL_CLAMP_TO_EDGE;
+		default:
+		{
+			return GL_REPEAT;
+		}
+	}
+}
+
+void GLES3Mapping::mapTextureFilter(GLenum& glMin, GLenum& glMag, FilterOption min, FilterOption mag, FilterOption mip)
+{
+	switch (min)
+	{
+		case FO_ANISOTROPIC:
+		case FO_LINEAR:
+		{
+			switch (mip)
+			{
+				case FO_ANISOTROPIC:
+				case FO_LINEAR:
+				{
+					// linear min, linear mip
+					glMin = GL_LINEAR_MIPMAP_LINEAR;
+				} break;
+				case FO_POINT:
+				{
+					// linear min, point mip
+					glMin = GL_LINEAR_MIPMAP_NEAREST;
+				} break;
+				case FO_NONE:
+				{
+					// linear min, no mip
+					glMin = GL_LINEAR;
+				} break;
+			}
+		} break;
+		case FO_POINT:
+		case FO_NONE:
+		{
+			switch (mip)
+			{
+				case FO_ANISOTROPIC:
+				case FO_LINEAR:
+				{
+					// nearest min, linear mip
+					glMin = GL_NEAREST_MIPMAP_LINEAR;
+				} break;
+				case FO_POINT:
+				{
+					// nearest min, point mip
+					glMin = GL_NEAREST_MIPMAP_NEAREST;
+				} break;
+				case FO_NONE:
+				{
+					// nearest min, no mip
+					glMin = GL_NEAREST;
+				} break;
+			}
+		} break;
+	}
+
+	switch (mag)
+	{
+		case FO_ANISOTROPIC: // GL treats linear and aniso the same
+		case FO_LINEAR:
+		{
+			glMag = GL_LINEAR;
+		} break;
+		case FO_POINT:
+		case FO_NONE:
+		{
+			glMag = GL_NEAREST;
+		} break;
+	}
+}
+
 
 BLADE_NAMESPACE_END

@@ -44,6 +44,8 @@ static uint32 getParamTypeSize(ParamType type)
 		case PT_MAT4X2FV:		return 32; break;
 		case PT_MAT4X3FV:		return 48; break;
 		case PT_MAT4X4FV:		return 64; break;
+		case PT_SAMPLER2D:
+		case PT_SAMPLER3D:      return 4; break;
 		default:
 		{
 			return 0;
@@ -95,10 +97,12 @@ Uniform::Uniform(const std::string& name, uint32 count, GLenum glType, GLint glL
 	, m_glType(glType)
 	, m_glLoc(glLoc)
 	, m_bDirty(true)
+	, m_bSampler(false)
 {
 	m_type = GLES3Mapping::unmapParamType(m_glType);
 	m_elementSize = getParamTypeSize(m_type);
 	m_size = m_elementSize * m_count;
+	m_bSampler = (m_type == PT_SAMPLER2D || m_type == PT_SAMPLER3D);
 	m_buffer = (Byte*)BLADE_MALLOC(m_size);
 }
 
@@ -429,6 +433,8 @@ void ShaderProgram::bindUniforms()
 		{
 			switch (uniform->getType())
 			{
+				case PT_SAMPLER2D:
+				case PT_SAMPLER3D: glUniform1i(uniform->getGLLocation(), (GLint)uniform->getGLLocation()); break;
 				case PT_1BV:
 				case PT_1IV: glUniform1iv(uniform->getGLLocation(), uniform->getCount(), (GLint*)uniform->getData()); break;
 				case PT_2BV:
@@ -462,6 +468,24 @@ void ShaderProgram::bindUniforms()
 
 			uniform->setDirty(false);
 		}
+
+		if (uniform->isSampler())
+		{
+			Texture* texture = getTexture(uniform->getGLLocation());
+			if (texture)
+			{
+				RenderEngine::Instance()->activeGLTextureUnit(uniform->getGLLocation());
+				RenderEngine::Instance()->bindGLTexture(texture->getType(), texture->getGLTarget(), texture->getTextureHandle());
+				glTexParameteri(texture->getGLTarget(), GL_TEXTURE_MIN_FILTER, texture->getSamplerState()->getGLMinFilter());
+				glTexParameteri(texture->getGLTarget(), GL_TEXTURE_MAG_FILTER, texture->getSamplerState()->getGLMagFilter());
+				glTexParameteri(texture->getGLTarget(), GL_TEXTURE_WRAP_S, texture->getSamplerState()->getGLAddrModeU());
+				glTexParameteri(texture->getGLTarget(), GL_TEXTURE_WRAP_T, texture->getSamplerState()->getGLAddrModeV());
+				if (texture->getType() == TT_3D)
+				{
+					glTexParameteri(texture->getGLTarget(), GL_TEXTURE_WRAP_R, texture->getSamplerState()->getGLAddrModeW());
+				}
+			}
+		}
 	}
 }
 
@@ -473,6 +497,24 @@ void ShaderProgram::bind()
 void ShaderProgram::unbind()
 {
 	RenderEngine::Instance()->bindGLProgram(0);
+}
+
+Texture* ShaderProgram::getTexture(uint32 unit) const
+{
+	TextureBindMap::const_iterator it = m_textures.find(unit);
+	if (it != m_textures.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+void ShaderProgram::bindTexture(uint32 unit, Texture* texture)
+{
+	m_textures[unit] = texture;
 }
 
 BLADE_NAMESPACE_END

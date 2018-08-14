@@ -20,8 +20,9 @@ public:
 	static const char BACKSLASH;			//!< '\\'
 	
 public:
-	static uint32 getFileSize(const std::string &filename);
-	static bool   getFileData(Buffer &buff, const std::string &filename, bool bStr = false);
+	static uint32      getFileSize(const std::string &filename);
+	static bool        getFileData(Buffer &buff, const std::string &filename, bool bStr = false);
+	static std::string getFileExt(const std::string &filename, bool bNeedDot = false);
 };
 
 BLADE_NAMESPACE_END

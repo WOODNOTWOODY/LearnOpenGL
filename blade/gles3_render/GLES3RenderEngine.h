@@ -4,6 +4,7 @@
 #include "util/Singleton.h"
 #include "GLES3RenderWindow.h"
 #include "GLES3RenderLayout.h"
+#include "GLES3Texture.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -20,6 +21,8 @@ public:
 	RenderEngine();
 	~RenderEngine();
 
+	static const uint32	MAX_TEXTURE_UNIT_NUM = 8;
+
 public:
 	bool                              initialize(const WindowSetting& setting);
 	void                              destroy();
@@ -31,10 +34,15 @@ public:
 	void                              bindGLVAO(GLuint hVAO);
 	void                              bindGLProgram(GLuint hProgram);
 	void                              bindGLBuffer(GLenum glTarget, GLuint hVBO);
+	void                              unbindGLBuffer(GLenum glTarget, GLuint hVBO);
+	void                              activeGLTextureUnit(GLenum texUnit);
+	void                              bindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture);
+	void                              unbindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture);
 
 	inline RenderWindow*              getCurrentRenderWindow() const { return m_curRenderWindow; }
 	inline GLuint                     getCurrentProgramHandle() const { return m_curGLProgram; }
 	inline GLuint                     getCurrentVAOHandle() const { return m_curGLVAO; }
+	inline GLuint                     getActiveTextureUnit() const { return m_glActiveTexUnit; }
 
 private:
 	typedef std::map<GLenum, GLuint> BindBufferMap;
@@ -43,6 +51,8 @@ private:
 	BindBufferMap        m_bindBufferMap;
 	GLuint               m_curGLProgram;
 	GLuint               m_curGLVAO;
+	GLuint				 m_texUnits[MAX_TEXTURE_UNIT_NUM][TT_COUNT];
+	GLuint				 m_glActiveTexUnit;
 };
 
 BLADE_NAMESPACE_END

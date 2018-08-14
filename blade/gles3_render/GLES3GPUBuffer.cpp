@@ -1,6 +1,7 @@
 #include "GLES3RenderStd.h"
 #include "GLES3GPUBuffer.h"
 #include "GLES3Mapping.h"
+#include "GLES3RenderEngine.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -20,6 +21,7 @@ GPUBuffer::GPUBuffer()
 GPUBuffer::~GPUBuffer()
 {
 	BLADE_SAFE_FREE(m_buffer);
+	RenderEngine::Instance()->unbindGLBuffer(m_glTarget, m_glBuffer);
 	glDeleteBuffers(1, &m_glBuffer);
 }
 
@@ -51,9 +53,9 @@ bool GPUBuffer::initialize(const GPUBufferDesc& desc)
 		}
 	}
 
-	glBindBuffer(m_glTarget, m_glBuffer);
+	RenderEngine::Instance()->bindGLBuffer(m_glTarget, m_glBuffer);
 	glBufferData(m_glTarget, (GLsizeiptr)m_size, desc.buffer, GLES3Mapping::mapGPUBufferUsage(m_usage));
-	glBindBuffer(m_glTarget, 0);
+	RenderEngine::Instance()->bindGLBuffer(m_glTarget, 0);
 	
 	return true;
 }

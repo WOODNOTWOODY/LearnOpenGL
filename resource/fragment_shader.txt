@@ -1,0 +1,11 @@
+#version 330 core
+
+uniform sampler2D iTex;
+uniform sampler2D iTex2;
+in vec2 fragTexCoord;
+out vec4 fragColor;
+
+void main()
+{
+	fragColor = mix(texture(iTex, fragTexCoord), texture(iTex2, fragTexCoord), 0.2);
+}

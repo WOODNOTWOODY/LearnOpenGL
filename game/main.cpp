@@ -5,6 +5,9 @@
 #include "gles3_render/GLES3GPUBuffer.h"
 #include "gles3_render/GLES3Shader.h"
 #include "gles3_render/GLES3RenderEngine.h"
+#include "gles3_render/GLES3Texture.h"
+#include "gles3_render/GLES3RenderStateObject.h"
+#include "image/Image.h"
 
 const int WINDOW_SIZE_WIDTH = 800;
 const int WINDOW_SIZE_HEIGHT = 600;
@@ -24,11 +27,34 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	SamplerStateDesc samplerDesc;
+	samplerDesc.addrModeU = AM_WRAP;
+	samplerDesc.addrModeV = AM_WRAP;
+	samplerDesc.minFilter = FO_LINEAR;
+	samplerDesc.magFilter = FO_LINEAR;
+	samplerDesc.mipFilter = FO_NONE;
+
+	Buffer buff, buffForImage;
+	PathUtil::getFileData(buff, "../../resource/container.jpg");
+	ImageFormat imgFmt = Image::getImageFormat("container.jpg");
+	Image *pImage = Image::createFromMemory(buff, imgFmt, false);
+	buffForImage.attach(pImage->getSize(), pImage->getData());
+	Texture* pTexture = BLADE_NEW(Texture(TT_2D, pImage->getElementFormat(), 0, pImage->getWidth(),
+		pImage->getHeight(), pImage->getDepth(), 1, samplerDesc, buffForImage));
+
+	Buffer buffa, buffForImagea;
+	PathUtil::getFileData(buffa, "../../resource/awesome_face.png");
+	imgFmt = Image::getImageFormat("awesome_face.png");
+	pImage = Image::createFromMemory(buffa, imgFmt, false);
+	buffForImagea.attach(pImage->getSize(), pImage->getData());
+	Texture* pTexture2 = BLADE_NEW(Texture(TT_2D, pImage->getElementFormat(), 0, pImage->getWidth(),
+		pImage->getHeight(), pImage->getDepth(), 1, samplerDesc, buffForImagea));
+
 	// load shaders
 	using namespace Blade;
 	Buffer buff1, buff2;
-	PathUtil::getFileData(buff1, "vertex_shader.txt", true);
-	PathUtil::getFileData(buff2, "fragment_shader.txt", true);
+	PathUtil::getFileData(buff1, "../../resource/vertex_shader.txt", true);
+	PathUtil::getFileData(buff2, "../../resource/fragment_shader.txt", true);
 	std::vector<Blade::Shader*> shaders;
 	Shader* shader1 = BLADE_NEW(Shader("vertex_shader.txt", ST_VERTEX_SHADER, buff1));
 	Shader* shader2 = BLADE_NEW(Shader("fragment_shader.txt", ST_FRAGMENT_SHADER, buff2));
@@ -42,12 +68,18 @@ int main(int argc, char *argv[])
 	shader1->release();
 	shader2->release();
 
+	Uniform* uf = program->getUniform("iTex");
+	program->bindTexture(uf->getGLLocation(), pTexture);
+
+	uf = program->getUniform("iTex2");
+	program->bindTexture(uf->getGLLocation(), pTexture2);
+
 	// vertex data
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f,
-		0.5f, -0.5f, 0.0f, // right 
-		-0.5f, -0.5f, 0.0f, // left  
-		-0.5f, 0.5f, 0.0f  // top   
+		0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+		0.5f, -0.5f, 0.0f, 1.0f, 1.0f,// right 
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // left  
+		-0.5f, 0.5f, 0.0f, 0.0f, 0.0f  // top   
 	};
 
 	uint32 indices[] = {
@@ -56,14 +88,20 @@ int main(int argc, char *argv[])
 	};
 
 	VertexElementList vertElms;
-	vertElms.resize(1);
+	vertElms.resize(2);
 	VertexElement &elm0 = vertElms[0];
 	elm0.name = "iPosition";
 	elm0.format = EF_RGB32_FLOAT;
 	elm0.bNormalized = true;
 
+	VertexElement& elm1 = vertElms[1];
+	elm1.name = "iTexCoord";
+	elm1.format = EF_RG32_FLOAT;
+	elm1.bNormalized = true;
+	elm1.offset = ELEMENT_SIZE(EF_RGB32_FLOAT);
+
 	GPUBufferDesc desc;
-	desc.stride = 3 * sizeof(float);
+	desc.stride = 5 * sizeof(float);
 	desc.type = GBT_VERTEX;
 	desc.size = sizeof(vertices);
 	desc.usage = GBU_STATIC_DRAW;
@@ -99,12 +137,16 @@ int main(int argc, char *argv[])
 		
 		renderEngine->clearGLColor(0.2f, 0.3f, 0.3f, 1.0f);
 		renderEngine->clear(CM_COLOR);
-		renderEngine->bindGLProgram(layout->getGLProgram());
+
+		layout->getProgram()->bind();
+		layout->getProgram()->bindUniforms();
 		renderEngine->render(layout);
 
 		// swap the buffers
 		renderEngine->getCurrentRenderWindow()->swapBuffers();
 	}
+
+	BLADE_DELETE(pTexture);
 
 	BLADE_DELETE(program);
 	BLADE_DELETE(vbo);

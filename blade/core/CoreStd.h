@@ -27,6 +27,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <cassert>
 #include "TypeDef.h"
 
 #endif

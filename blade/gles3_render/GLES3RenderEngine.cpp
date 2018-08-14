@@ -7,7 +7,15 @@ RenderEngine::RenderEngine()
 	: m_curRenderWindow(NULL)
 	, m_curGLProgram(0)
 	, m_curGLVAO(0)
+	, m_glActiveTexUnit(0)
 {
+	for (uint32 i = 0; i < MAX_TEXTURE_UNIT_NUM; ++i)
+	{
+		for (uint32 j = 0; j < TT_COUNT; ++j)
+		{
+			m_texUnits[i][j] = (GLuint)(-1);
+		}
+	}
 }
 
 RenderEngine::~RenderEngine()
@@ -87,6 +95,16 @@ void RenderEngine::bindGLBuffer(GLenum glTarget, GLuint hVBO)
 	}
 }
 
+void RenderEngine::unbindGLBuffer(GLenum glTarget, GLuint hVBO)
+{
+	BindBufferMap::iterator it = m_bindBufferMap.find(glTarget);
+	if (it != m_bindBufferMap.end() && it->second == hVBO)
+	{
+		glBindBuffer(glTarget, 0);
+		m_bindBufferMap.erase(it);
+	}
+}
+
 void RenderEngine::setViewport(int left, int top, uint32 width, uint32 height)
 {
 	glViewport(left, top, width, height);
@@ -116,6 +134,38 @@ void RenderEngine::clear(uint32 flags)
 	if (mask != 0)
 	{
 		glClear(mask);
+	}
+}
+
+void RenderEngine::activeGLTextureUnit(GLenum texUnit)
+{
+	if (m_glActiveTexUnit != texUnit)
+	{
+		glActiveTexture(GL_TEXTURE0 + texUnit);
+		m_glActiveTexUnit = texUnit;
+	}
+}
+
+void RenderEngine::bindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture)
+{
+	uint32& handle = m_texUnits[m_glActiveTexUnit][type];
+	if (hTexture != handle)
+	{
+		glBindTexture(glTarget, hTexture);
+		handle = hTexture;
+	}
+}
+
+void RenderEngine::unbindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture)
+{
+	for (uint32 i = 0; i < MAX_TEXTURE_UNIT_NUM; ++i)
+	{
+		uint32& handle = m_texUnits[i][type];
+		if (handle == hTexture)
+		{
+			glBindTexture(glTarget, 0);
+			handle = 0;
+		}
 	}
 }
 

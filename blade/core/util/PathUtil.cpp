@@ -75,4 +75,18 @@ bool PathUtil::getFileData(Buffer &buff, const std::string &filename, bool bStr)
 	return true;
 }
 
+std::string PathUtil::getFileExt(const std::string &filename, bool bNeedDot)
+{
+	size_t pos = filename.find_last_of(DOT);
+	if (pos == std::string::npos)
+	{
+		return "";
+	}
+
+	if (!bNeedDot)
+		++pos;
+
+	return filename.substr(pos);
+}
+
 BLADE_NAMESPACE_END

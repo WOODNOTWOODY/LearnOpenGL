@@ -4,6 +4,7 @@ set(TARGET_NAME core)
 
 set(INCLUDE_FILES 
   ${BLADE_DEP_PATH}/dirent
+  ${BLADE_DEP_PATH}/stbi
   ${BLADE_PATH}/core
 )
 
