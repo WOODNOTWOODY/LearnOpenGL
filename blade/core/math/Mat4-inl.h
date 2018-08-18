@@ -259,7 +259,7 @@ inline Mat4T<T>& Mat4T<T>::inverseGeneral3D()
 template <typename T>
 inline Mat4T<T>& Mat4T<T>::inverseFull()
 {
-#define SWAP_ROWS(a, b) PP_WRAP_CODE(T* _tmp = (a); (a) = (b); (b) = _tmp;)
+#define SWAP_ROWS(a, b) {T* _tmp = (a); (a) = (b); (b) = _tmp;}
 
 	T mt[4][8];
 	T m0, m1, m2, m3, s;
@@ -285,7 +285,7 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 		SWAP_ROWS(r2, r1);
 	if (std::abs(r1[0]) > std::abs(r0[0]))
 		SWAP_ROWS(r1, r0);
-	if (Math::IsEqual(r0[0], 0))
+	if (Math::IsEqual(r0[0], (T)0))
 	{
 		zero();
 		return *this;
@@ -297,22 +297,22 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 	s = r0[2]; r1[2] -= m1 * s; r2[2] -= m2 * s; r3[2] -= m3 * s;
 	s = r0[3]; r1[3] -= m1 * s; r2[3] -= m2 * s; r3[3] -= m3 * s;
 	s = r0[4];
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r1[4] -= m1 * s; r2[4] -= m2 * s; r3[4] -= m3 * s;
 	}
 	s = r0[5];
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r1[5] -= m1 * s; r2[5] -= m2 * s; r3[5] -= m3 * s;
 	}
 	s = r0[6];
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r1[6] -= m1 * s; r2[6] -= m2 * s; r3[6] -= m3 * s;
 	}
 	s = r0[7];
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r1[7] -= m1 * s; r2[7] -= m2 * s; r3[7] -= m3 * s;
 	}
@@ -322,7 +322,7 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 		SWAP_ROWS(r3, r2);
 	if (std::abs(r2[1]) > std::abs(r1[1]))
 		SWAP_ROWS(r2, r1);
-	if (Math::IsEqual(r1[1], 0))
+	if (Math::IsEqual(r1[1], (T)0))
 	{
 		zero();
 		return *this;
@@ -333,22 +333,22 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 	r2[2] -= m2 * r1[2]; r3[2] -= m3 * r1[2];
 	r2[3] -= m2 * r1[3]; r3[3] -= m3 * r1[3];
 	s = r1[4]; 
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r2[4] -= m2 * s; r3[4] -= m3 * s;
 	}
 	s = r1[5]; 
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r2[5] -= m2 * s; r3[5] -= m3 * s;
 	}
 	s = r1[6]; 
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r2[6] -= m2 * s; r3[6] -= m3 * s;
 	}
 	s = r1[7]; 
-	if (Math::IsNotEqual(s, 0))
+	if (Math::IsNotEqual(s, (T)0))
 	{
 		r2[7] -= m2 * s; r3[7] -= m3 * s;
 	}
@@ -356,7 +356,7 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 	/* choose pivot - or die */
 	if (std::abs(r3[2]) > std::abs(r2[2]))
 		SWAP_ROWS(r3, r2);
-	if (Math::IsEqual(r2[2], 0))
+	if (Math::IsEqual(r2[2], (T)0))
 	{
 		zero();
 		return *this;
@@ -369,7 +369,7 @@ inline Mat4T<T>& Mat4T<T>::inverseFull()
 	r3[7] -= m3 * r2[7];
 
 	/* last check */
-	if (Math::IsEqual(r3[3], 0))
+	if (Math::IsEqual(r3[3], (T)0))
 	{
 		zero();
 		return *this;
