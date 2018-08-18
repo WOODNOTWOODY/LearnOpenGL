@@ -199,15 +199,6 @@ inline Mat4T<T>& Mat4T<T>::transpose()
 // inverse(M) = inverse(|   |) = |                 | (A is the upper-left 3 x 3 submatrix of M)
 //  	                |C 1|    |-C * inverse(A) 1|
 //---------------------------------------------------------------------------------
-// column major. memory layout:
-//
-//                row no (=vertical)
-//               |  0   1   2   3
-//            ---+----------------
-//            0  | m00 m10 m20 m30
-// column no  1  | m01 m11 m21 m31
-// (=horiz)   2  | m02 m12 m22 m32
-//            3  | m03 m13 m23 m33
 template <typename T>
 inline Mat4T<T>& Mat4T<T>::inverseGeneral3D()
 {
@@ -264,62 +255,634 @@ inline Mat4T<T>& Mat4T<T>::inverseGeneral3D()
 	return *this;
 }
 
+// 4x4 matrix inversion by Gaussian reduction with partial pivoting followed by back/substitution;
 template <typename T>
 inline Mat4T<T>& Mat4T<T>::inverseFull()
 {
+#define SWAP_ROWS(a, b) PP_WRAP_CODE(T* _tmp = (a); (a) = (b); (b) = _tmp;)
+
+	T mt[4][8];
+	T m0, m1, m2, m3, s;
+	T *r0, *r1, *r2, *r3;
+
+	r0 = mt[0], r1 = mt[1], r2 = mt[2], r3 = mt[3];
+	r0[0] = m00; r0[1] = m01; r0[2] = m02; r0[3] = m03;
+	r0[4] = 1; r0[5] = 0; r0[6] = 0; r0[7] = 0;
+
+	r1[0] = m10; r1[1] = m11; r1[2] = m12; r1[3] = m13;
+	r1[4] = 0; r1[5] = 1; r1[6] = 0; r1[7] = 0;
+
+	r2[0] = m20; r2[1] = m21; r2[2] = m22; r2[3] = m23;
+	r2[4] = 0; r2[5] = 0; r2[6] = 1; r2[7] = 0;
+
+	r3[0] = m30; r3[1] = m31; r3[2] = m32; r3[3] = m33;
+	r3[4] = 0; r3[5] = 0; r3[6] = 0; r3[7] = 1;
+
+	/* choose pivot - or die */
+	if (std::abs(r3[0]) > std::abs(r2[0]))
+		SWAP_ROWS(r3, r2);
+	if (std::abs(r2[0]) > std::abs(r1[0]))
+		SWAP_ROWS(r2, r1);
+	if (std::abs(r1[0]) > std::abs(r0[0]))
+		SWAP_ROWS(r1, r0);
+	if (Math::IsEqual(r0[0], 0))
+	{
+		zero();
+		return *this;
+	}
+
+	/* eliminate first variable     */
+	m1 = r1[0] / r0[0]; m2 = r2[0] / r0[0]; m3 = r3[0] / r0[0];
+	s = r0[1]; r1[1] -= m1 * s; r2[1] -= m2 * s; r3[1] -= m3 * s;
+	s = r0[2]; r1[2] -= m1 * s; r2[2] -= m2 * s; r3[2] -= m3 * s;
+	s = r0[3]; r1[3] -= m1 * s; r2[3] -= m2 * s; r3[3] -= m3 * s;
+	s = r0[4];
+	if (Math::IsNotEqual(s, 0))
+	{
+		r1[4] -= m1 * s; r2[4] -= m2 * s; r3[4] -= m3 * s;
+	}
+	s = r0[5];
+	if (Math::IsNotEqual(s, 0))
+	{
+		r1[5] -= m1 * s; r2[5] -= m2 * s; r3[5] -= m3 * s;
+	}
+	s = r0[6];
+	if (Math::IsNotEqual(s, 0))
+	{
+		r1[6] -= m1 * s; r2[6] -= m2 * s; r3[6] -= m3 * s;
+	}
+	s = r0[7];
+	if (Math::IsNotEqual(s, 0))
+	{
+		r1[7] -= m1 * s; r2[7] -= m2 * s; r3[7] -= m3 * s;
+	}
+
+	/* choose pivot - or die */
+	if (std::abs(r3[1]) > std::abs(r2[1]))
+		SWAP_ROWS(r3, r2);
+	if (std::abs(r2[1]) > std::abs(r1[1]))
+		SWAP_ROWS(r2, r1);
+	if (Math::IsEqual(r1[1], 0))
+	{
+		zero();
+		return *this;
+	}
+
+	/* eliminate second variable */
+	m2 = r2[1] / r1[1]; m3 = r3[1] / r1[1];
+	r2[2] -= m2 * r1[2]; r3[2] -= m3 * r1[2];
+	r2[3] -= m2 * r1[3]; r3[3] -= m3 * r1[3];
+	s = r1[4]; 
+	if (Math::IsNotEqual(s, 0))
+	{
+		r2[4] -= m2 * s; r3[4] -= m3 * s;
+	}
+	s = r1[5]; 
+	if (Math::IsNotEqual(s, 0))
+	{
+		r2[5] -= m2 * s; r3[5] -= m3 * s;
+	}
+	s = r1[6]; 
+	if (Math::IsNotEqual(s, 0))
+	{
+		r2[6] -= m2 * s; r3[6] -= m3 * s;
+	}
+	s = r1[7]; 
+	if (Math::IsNotEqual(s, 0))
+	{
+		r2[7] -= m2 * s; r3[7] -= m3 * s;
+	}
+
+	/* choose pivot - or die */
+	if (std::abs(r3[2]) > std::abs(r2[2]))
+		SWAP_ROWS(r3, r2);
+	if (Math::IsEqual(r2[2], 0))
+	{
+		zero();
+		return *this;
+	}
+
+	/* eliminate third variable */
+	m3 = r3[2] / r2[2];
+	r3[3] -= m3 * r2[3]; r3[4] -= m3 * r2[4];
+	r3[5] -= m3 * r2[5]; r3[6] -= m3 * r2[6];
+	r3[7] -= m3 * r2[7];
+
+	/* last check */
+	if (Math::IsEqual(r3[3], 0))
+	{
+		zero();
+		return *this;
+	}
+
+	s = T(1.0) / r3[3];          /* now back substitute row 3 */
+	r3[4] *= s; r3[5] *= s; r3[6] *= s; r3[7] *= s;
+
+	m2 = r2[3];                /* now back substitute row 2 */
+	s = T(1.0) / r2[2];
+	r2[4] = s * (r2[4] - r3[4] * m2), r2[5] = s * (r2[5] - r3[5] * m2), r2[6] = s * (r2[6] - r3[6] * m2), r2[7] = s * (r2[7] - r3[7] * m2);
+	m1 = r1[3];
+	r1[4] -= r3[4] * m1; r1[5] -= r3[5] * m1, r1[6] -= r3[6] * m1; r1[7] -= r3[7] * m1;
+	m0 = r0[3];
+	r0[4] -= r3[4] * m0; r0[5] -= r3[5] * m0, r0[6] -= r3[6] * m0; r0[7] -= r3[7] * m0;
+
+	m1 = r1[2];                /* now back substitute row 1 */
+	s = T(1.0) / r1[1];
+	r1[4] = s * (r1[4] - r2[4] * m1); r1[5] = s * (r1[5] - r2[5] * m1), r1[6] = s * (r1[6] - r2[6] * m1); r1[7] = s * (r1[7] - r2[7] * m1);
+	m0 = r0[2];
+	r0[4] -= r2[4] * m0; r0[5] -= r2[5] * m0, r0[6] -= r2[6] * m0; r0[7] -= r2[7] * m0;
+
+	m0 = r0[1];                /* now back substitute row 0 */
+	s = T(1.0) / r0[0];
+	r0[4] = s * (r0[4] - r1[4] * m0); r0[5] = s * (r0[5] - r1[5] * m0), r0[6] = s * (r0[6] - r1[6] * m0); r0[7] = s * (r0[7] - r1[7] * m0);
+
+	m00 = r0[4]; m01 = r0[5], m02 = r0[6]; m03 = r0[7];
+	m10 = r1[4]; m11 = r1[5], m12 = r1[6]; m13 = r1[7];
+	m20 = r2[4]; m21 = r2[5], m22 = r2[6]; m23 = r2[7];
+	m30 = r3[4]; m31 = r3[5], m32 = r3[6]; m33 = r3[7];
+
+#undef SWAP_ROWS
+	return *this;
 }
 
 template <typename T>
 inline Mat4T<T>& Mat4T<T>::identity()
 {
+	m00 = 1; m01 = 0; m02 = 0; m03 = 0;
+	m10 = 0; m11 = 1; m12 = 0; m13 = 0;
+	m20 = 0; m21 = 0; m22 = 1; m23 = 0;
+	m30 = 0; m31 = 0; m32 = 0; m33 = 1;
+	return *this;
 }
 template <typename T>
 inline Mat4T<T>& Mat4T<T>::zero()
 {
+	memset(m, 0, 16 * sizeof(T));
+	return *this;
 }
 
-	Mat4T&          translate(const Vec3T<T>& v);
-	Mat4T&          translate(T x, T y, T z);
-	Mat4T&          makeTranslate(const Vec3T<T>& v);
-	Mat4T&          makeTranslate(T x, T y, T z);
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::translate(const Vec3T<T>& v)
+{
+	return translate(v.x, v.y, v.z);
+}
 
-	Mat4T&          scale(const Vec3T<T>& v);
-	Mat4T&          scale(T x, T y, T z);
-	Mat4T&          makeScale(const Vec3T<T>& v);
-	Mat4T&          makeScale(T x, T y, T z);
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::translate(T x, T y, T z)
+{
+	m03 += m00 * x + m01 * y + m02 * z;
+	m13 += m10 * x + m11 * y + m12 * z;
+	m23 += m20 * x + m21 * y + m22 * z;
+	return *this;
+}
 
-	Mat4T&          rotate(const Vec3T<T>& axis, T radian);
-	Mat4T&          makeRotate(const Vec3T<T>& axis, T radian);
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::makeTranslate(const Vec3T<T>& v)
+{
+	return makeTranslate(v.x, v.y, v.z);
+}
 
-	Vec3T<T>        perspectiveTransform(const Vec3T<T>& v) const;
-	Vec4T<T>        perspectiveTransform(const Vec4T<T>& v) const;
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::makeTranslate(T x, T y, T z)
+{
+	m00 = 1; m10 = 0; m20 = 0; m30 = 0;
+	m01 = 0; m11 = 1; m21 = 0; m31 = 0;
+	m02 = 0; m12 = 0; m22 = 1; m32 = 0;
+	m03 = x; m13 = y; m23 = z; m33 = 1;
+	return *this;
+}
 
-	Vec3T<T>        affineTransform(const Vec3T<T>& v) const;
-	Vec4T<T>        affineTransform(const Vec4T<T>& v) const;
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::scale(const Vec3T<T>& v)
+{
+	return scale(v.x, v.y, v.z);
+}
 
-	/*void			decompose(Vec3T<T>& t, QuatT<T>& r, Vec3T<T>& s) const;
-	Vec3T<T>		decomposeTranslation() const;
-	Vec3T<T>		decomposeScale() const;
-	QuatT<T>		decomposeRotation() const;
-	Mat4T<T>		decomposeRotationMatrix() const;
-	FrustumPlanes   decomposeProjection() const;*/
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::scale(T x, T y, T z)
+{
+	m00 *= x; m01 *= y; m02 *= z;
+	m10 *= x; m11 *= y; m12 *= z;
+	m20 *= x; m21 *= y; m22 *= z;
+	return *this;
+}
 
-	Mat4T&          perspective(T fov, T aspect, T near, T far);
-	Mat4T&          ortho(T left, T right, T bottom, T top, T near, T far);
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::makeScale(const Vec3T<T>& v)
+{
+	return makeScale(v.x, v.y, v.z);
+}
 
-public:
-	template <typename T> friend bool     operator == (const Mat4T<T> &a, const Mat4T<T> &b);
-	template <typename T> friend bool     operator != (const Mat4T<T> &a, const Mat4T<T> &b);
-	template <typename T> friend Mat4T<T> operator + (const Mat4T<T> &a, const T f);
-	template <typename T> friend Mat4T<T> operator + (const T f, const Mat4T<T> &a);
-	template <typename T> friend Mat4T<T> operator + (const Mat4T<T> &a, const Mat4T<T> &b);
-	template <typename T> friend Mat4T<T> operator - (const Mat4T<T> &a, const T f);
-	template <typename T> friend Mat4T<T> operator - (const T f, const Mat4T<T> &a);
-	template <typename T> friend Mat4T<T> operator - (const Mat4T<T> &a, const Mat4T<T> &b);
-	template <typename T> friend Vec4T<T> operator * (const Mat4T<T> &mat, const Vec4T<T> &vec);
-	template <typename T> friend Vec3T<T> operator * (const Mat4T<T> &mat, const Vec3T<T> &vec);
-	template <typename T> friend Mat4T<T> operator * (const Mat4T<T> &a, const Mat4T<T> &b);
-	template <typename T> friend Mat4T<T> operator * (const Mat4T<T> &a, const T f);
-	template <typename T> friend Mat4T<T> operator * (const T f, const Mat4T<T> &a);
-	template <typename T> friend Mat4T<T> operator / (const Mat4T<T> &mat, const T f);
-};
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::makeScale(T x, T y, T z)
+{
+	m00 = x; m10 = 0; m20 = 0; m30 = 0;
+	m01 = 0; m11 = y; m21 = 0; m31 = 0;
+	m02 = 0; m12 = 0; m22 = z; m32 = 0;
+	m03 = 0; m13 = 0; m23 = 0; m33 = 1;
+	return *this;
+}
+
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::rotate(const Vec3T<T>& axis, T radian)
+{
+	T c = std::cos(radian);
+	T s = std::sin(radian);
+	axis.normalize();
+
+	T t = T(1) - c;
+	T tx = t * axis.x;
+	T ty = t * axis.y;
+	T tz = t * axis.z;
+	T txy = tx * axis.y;
+	T txz = tx * axis.z;
+	T tyz = ty * axis.z;
+	T sx = s * axis.x;
+	T sy = s * axis.y;
+	T sz = s * axis.z;
+
+	Mat4T<T> rotate;
+
+	rotate.m00 = c + tx * axis.x;
+	rotate.m10 = txy + sz;
+	rotate.m20 = txz - sy;
+	rotate.m30 = 0;
+
+	rotate.m01 = txy - sz;
+	rotate.m11 = c + ty * axis.y;
+	rotate.m21 = tyz + sx;
+	rotate.m31 = 0;
+
+	rotate.m02 = txz + sy;
+	rotate.m12 = tyz - sx;
+	rotate.m22 = c + tz * axis.z;
+	rotate.m32 = 0;
+
+	rotate.m03 = 0;
+	rotate.m13 = 0;
+	rotate.m23 = 0;
+	rotate.m33 = 1;
+
+	*this = (rotate * (*this));
+	return *this;
+}
+
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::makeRotate(const Vec3T<T>& axis, T radian)
+{
+	T c = std::cos(radian);
+	T s = std::sin(radian);
+	axis.normalize();
+
+	T t = T(1) - c;
+	T tx = t * axis.x;
+	T ty = t * axis.y;
+	T tz = t * axis.z;
+	T txy = tx * axis.y;
+	T txz = tx * axis.z;
+	T tyz = ty * axis.z;
+	T sx = s * axis.x;
+	T sy = s * axis.y;
+	T sz = s * axis.z;
+
+	m00 = c + tx * axis.x;
+	m10 = txy + sz;
+	m20 = txz - sy;
+	m30 = 0;
+
+	m01 = txy - sz;
+	m11 = c + ty * axis.y;
+	m21 = tyz + sx;
+	m31 = 0;
+
+	m02 = txz + sy;
+	m12 = tyz - sx;
+	m22 = c + tz * axis.z;
+	m32 = 0;
+
+	m03 = 0;
+	m13 = 0;
+	m23 = 0;
+	m33 = 1;
+
+	return *this;
+}
+
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::perspective(T fov, T aspect, T near, T far)
+{
+	T tanHalfFov = std::tan(fov / (T)2);
+	T cotanHalfFov = T(1) / tanHalfFov;
+	T deltaZ = near - far;
+
+	m00 = cotanHalfFov / aspect; m01 = 0; m02 = 0; m03 = 0;
+	m10 = 0; m11 = cotanHalfFov; m12 = 0; m13 = 0;
+	m20 = 0; m21 = 0; m22 = (near + far) / deltaZ; m23 = (T)2 * near * far / deltaZ;
+	m30 = 0; m31 = 0; m32 = -1; m33 = 0;
+
+	return *this;
+}
+
+template <typename T>
+inline Mat4T<T>& Mat4T<T>::ortho(T left, T right, T bottom, T top, T near, T far)
+{
+	T dx = T(1) / (right - left);
+	T dy = T(1) / (top - bottom);
+	T dz = T(1) / (far - near);
+
+	m00 = dx + dx; m01 = 0; m02 = 0; m03 = -(left + right) * dx;
+	m10 = 0; m11 = dy + dy; m12 = 0; m13 = -(top + bottom) * dy;
+	m20 = 0; m21 = 0; m22 = dz + dz; m23 = (near + far) * dz;
+	m30 = 0; m31 = 0; m32 = 0; m33 = 1;
+	return *this;
+}
+
+template <typename T>
+inline Vec3T<T> Mat4T<T>::perspectiveTransform(const Vec3T<T>& v) const
+{
+	Vec3T<T> res;
+	res.x = m00 * v.x + m01 * v.y + m02 * v.z + m03;
+	res.y = m10 * v.x + m11 * v.y + m12 * v.z + m13;
+	res.z = m20 * v.x + m21 * v.y + m22 * v.z + m23;
+	T w = m30 * v.x + m31 * v.y + m32 * v.z + m33;
+	if (std::abs(w) > 1.0e-7f)
+	{
+		T invW = T(1.0) / w;
+		res.x *= invW;
+		res.y *= invW;
+		res.z *= invW;
+	}
+	else
+	{
+		res.x = T(0);
+		res.y = T(0);
+		res.z = T(0);
+	}
+	return res;
+}
+
+template <typename T>
+inline Vec4T<T> Mat4T<T>::perspectiveTransform(const Vec4T<T>& v) const
+{
+	Vec4T<T> outVec;
+	outVec.x = v.x * m00 + v.y * m01 + v.z * m02 + v.w * m03;
+	outVec.y = v.x * m10 + v.y * m11 + v.z * m12 + v.w * m13;
+	outVec.z = v.x * m20 + v.y * m21 + v.z * m22 + v.w * m23;
+	outVec.w = v.x * m30 + v.y * m31 + v.z * m32 + v.w * m33;
+	return outVec;
+}
+
+template <typename T>
+inline Vec3T<T> Mat4T<T>::affineTransform(const Vec3T<T>& v) const
+{
+	Vec3T<T> outVec;
+	outVec.x = v.x * m00 + v.y * m01 + v.z * m02 + m03;
+	outVec.y = v.x * m10 + v.y * m11 + v.z * m12 + m13;
+	outVec.z = v.x * m20 + v.y * m21 + v.z * m22 + m23;
+	return outVec;
+}
+
+template <typename T>
+inline Vec4T<T> Mat4T<T>::affineTransform(const Vec4T<T>& v) const
+{
+	Vec4T<T> outVec;
+	outVec.x = v.x * m00 + v.y * m01 + v.z * m02 + m03 * v.w;
+	outVec.y = v.x * m10 + v.y * m11 + v.z * m12 + m13 * v.w;
+	outVec.z = v.x * m20 + v.y * m21 + v.z * m22 + m23 * v.w;
+	outVec.w = v.w;
+	return outVec;
+}
+
+template <typename T> 
+inline bool operator == (const Mat4T<T> &a, const Mat4T<T> &b)
+{
+	// true if all vectors equal to each other
+	return (Math::IsEqual(a.m00, b.m00) && Math::IsEqual(a.m01, b.m01) && Math::IsEqual(a.m02, b.m02) && Math::IsEqual(a.m03, b.m03) &&
+		Math::IsEqual(a.m10, b.m10) && Math::IsEqual(a.m11, b.m11) && Math::IsEqual(a.m12, b.m12) && Math::IsEqual(a.m13, b.m13) &&
+		Math::IsEqual(a.m20, b.m20) && Math::IsEqual(a.m21, b.m21) && Math::IsEqual(a.m22, b.m22) && Math::IsEqual(a.m23, b.m23) &&
+		Math::IsEqual(a.m30, b.m30) && Math::IsEqual(a.m31, b.m31) && Math::IsEqual(a.m32, b.m32) && Math::IsEqual(a.m33, b.m33));
+}
+
+template <typename T>
+inline bool operator != (const Mat4T<T> &a, const Mat4T<T> &b)
+{
+	// true if any one vector not-equal
+	return (Math::IsNotEqual(a.m00, b.m00) || Math::IsNotEqual(a.m01, b.m01) || Math::IsNotEqual(a.m02, b.m02) || Math::IsNotEqual(a.m03, b.m03) ||
+		Math::IsNotEqual(a.m10, b.m10) || Math::IsNotEqual(a.m11, b.m11) || Math::IsNotEqual(a.m12, b.m12) || Math::IsNotEqual(a.m13, b.m13) ||
+		Math::IsNotEqual(a.m20, b.m20) || Math::IsNotEqual(a.m21, b.m21) || Math::IsNotEqual(a.m22, b.m22) || Math::IsNotEqual(a.m23, b.m23) ||
+		Math::IsNotEqual(a.m30, b.m30) || Math::IsNotEqual(a.m31, b.m31) || Math::IsNotEqual(a.m32, b.m32) || Math::IsNotEqual(a.m33, b.m33));
+}
+
+template <typename T> 
+inline Mat4T<T> operator + (const Mat4T<T> &a, const T f)
+{
+	Mat4T<T> result = a;
+	result += f;
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator + (const T f, const Mat4T<T> &a)
+{
+	Mat4T<T> result = a;
+	result += f;
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator + (const Mat4T<T> &a, const Mat4T<T> &b)
+{
+	Mat4T<T> result;
+
+	result.m00 = a.m00 + b.m00;
+	result.m01 = a.m01 + b.m01;
+	result.m02 = a.m02 + b.m02;
+	result.m03 = a.m03 + b.m03;
+
+	result.m10 = a.m10 + b.m10;
+	result.m11 = a.m11 + b.m11;
+	result.m12 = a.m12 + b.m12;
+	result.m13 = a.m13 + b.m13;
+
+	result.m20 = a.m20 + b.m20;
+	result.m21 = a.m21 + b.m21;
+	result.m22 = a.m22 + b.m22;
+	result.m23 = a.m23 + b.m23;
+
+	result.m30 = a.m30 + b.m30;
+	result.m31 = a.m31 + b.m31;
+	result.m32 = a.m32 + b.m32;
+	result.m33 = a.m33 + b.m33;
+
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator - (const Mat4T<T> &a, const T f)
+{
+	Mat4T<T> result = a;
+	result -= f;
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator - (const T f, const Mat4T<T> &a)
+{
+	Mat4T<T> result = a;
+	result -= f;
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator - (const Mat4T<T> &a, const Mat4T<T> &b)
+{
+	Mat4T<T> result;
+
+	result.m00 = a.m00 - b.m00;
+	result.m01 = a.m01 - b.m01;
+	result.m02 = a.m02 - b.m02;
+	result.m03 = a.m03 - b.m03;
+
+	result.m10 = a.m10 - b.m10;
+	result.m11 = a.m11 - b.m11;
+	result.m12 = a.m12 - b.m12;
+	result.m13 = a.m13 - b.m13;
+
+	result.m20 = a.m20 - b.m20;
+	result.m21 = a.m21 - b.m21;
+	result.m22 = a.m22 - b.m22;
+	result.m23 = a.m23 - b.m23;
+
+	result.m30 = a.m30 - b.m30;
+	result.m31 = a.m31 - b.m31;
+	result.m32 = a.m32 - b.m32;
+	result.m33 = a.m33 - b.m33;
+
+	return result;
+}
+
+template <typename T> 
+inline Vec4T<T> operator * (const Mat4T<T> &m, const Vec4T<T> &v)
+{
+	return m.transformVec4(v);
+}
+
+template <typename T> 
+inline Vec3T<T> operator * (const Mat4T<T> &m, const Vec3T<T> &v)
+{
+	return m.transformVec3(v);
+}
+
+template <typename T> 
+inline Mat4T<T> operator * (const Mat4T<T> &a, const Mat4T<T> &b)
+{
+	Mat4T<T> result;
+
+	result.m00 = a.m00 * b.m00 + a.m01 * b.m10 + a.m02 * b.m20 + a.m03 * b.m30;
+	result.m01 = a.m00 * b.m01 + a.m01 * b.m11 + a.m02 * b.m21 + a.m03 * b.m31;
+	result.m02 = a.m00 * b.m02 + a.m01 * b.m12 + a.m02 * b.m22 + a.m03 * b.m32;
+	result.m03 = a.m00 * b.m03 + a.m01 * b.m13 + a.m02 * b.m23 + a.m03 * b.m33;
+
+	result.m10 = a.m10 * b.m00 + a.m11 * b.m10 + a.m12 * b.m20 + a.m13 * b.m30;
+	result.m11 = a.m10 * b.m01 + a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31;
+	result.m12 = a.m10 * b.m02 + a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32;
+	result.m13 = a.m10 * b.m03 + a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33;
+
+	result.m20 = a.m20 * b.m00 + a.m21 * b.m10 + a.m22 * b.m20 + a.m23 * b.m30;
+	result.m21 = a.m20 * b.m01 + a.m21 * b.m11 + a.m22 * b.m21 + a.m23 * b.m31;
+	result.m22 = a.m20 * b.m02 + a.m21 * b.m12 + a.m22 * b.m22 + a.m23 * b.m32;
+	result.m23 = a.m20 * b.m03 + a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33;
+
+	result.m30 = a.m30 * b.m00 + a.m31 * b.m10 + a.m32 * b.m20 + a.m33 * b.m30;
+	result.m31 = a.m30 * b.m01 + a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31;
+	result.m32 = a.m30 * b.m02 + a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32;
+	result.m33 = a.m30 * b.m03 + a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33;
+
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator * (const Mat4T<T> &a, const T f)
+{
+	Mat4T<T> result;
+
+	result.m00 = a.m00 * f;
+	result.m01 = a.m01 * f;
+	result.m02 = a.m02 * f;
+	result.m03 = a.m03 * f;
+
+	result.m10 = a.m10 * f;
+	result.m11 = a.m11 * f;
+	result.m12 = a.m12 * f;
+	result.m13 = a.m13 * f;
+
+	result.m20 = a.m20 * f;
+	result.m21 = a.m21 * f;
+	result.m22 = a.m22 * f;
+	result.m23 = a.m23 * f;
+
+	result.m30 = a.m30 * f;
+	result.m31 = a.m31 * f;
+	result.m32 = a.m32 * f;
+	result.m33 = a.m33 * f;
+
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator * (const T f, const Mat4T<T> &a)
+{
+	Mat4T<T> result;
+
+	result.m00 = f * a.m00;
+	result.m01 = f * a.m01;
+	result.m02 = f * a.m02;
+	result.m03 = f * a.m03;
+
+	result.m10 = f * a.m10;
+	result.m11 = f * a.m11;
+	result.m12 = f * a.m12;
+	result.m13 = f * a.m13;
+
+	result.m20 = f * a.m20;
+	result.m21 = f * a.m21;
+	result.m22 = f * a.m22;
+	result.m23 = f * a.m23;
+
+	result.m30 = f * a.m30;
+	result.m31 = f * a.m31;
+	result.m32 = f * a.m32;
+	result.m33 = f * a.m33;
+
+	return result;
+}
+
+template <typename T> 
+inline Mat4T<T> operator / (const Mat4T<T> &a, const T f)
+{
+	Mat4T<T> result;
+
+	T fInv = 1.0f / f;
+
+	result.m00 = a.m00 * fInv;
+	result.m01 = a.m01 * fInv;
+	result.m02 = a.m02 * fInv;
+	result.m03 = a.m03 * fInv;
+
+	result.m10 = a.m10 * fInv;
+	result.m11 = a.m11 * fInv;
+	result.m12 = a.m12 * fInv;
+	result.m13 = a.m13 * fInv;
+
+	result.m20 = a.m20 * fInv;
+	result.m21 = a.m21 * fInv;
+	result.m22 = a.m22 * fInv;
+	result.m23 = a.m23 * fInv;
+
+	result.m30 = a.m30 * fInv;
+	result.m31 = a.m31 * fInv;
+	result.m32 = a.m32 * fInv;
+	result.m33 = a.m33 * fInv;
+
+	return result;
+}

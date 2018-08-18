@@ -38,7 +38,7 @@ public:
 			T m01, m11, m21, m31;
 			T m02, m12, m22, m32;
 			T m03, m13, m23, m33;
-		}
+		};
 		T m[16];
 	};
 
@@ -120,7 +120,12 @@ public:
 	template <typename T> friend Mat4T<T> operator / (const Mat4T<T> &mat, const T f);
 };
 
+typedef Mat4T<float>	Mat4;
+
 #include "Mat4-inl.h"
+
+extern BLADE_CORE_API const Mat4 MAT4_ZERO;
+extern BLADE_CORE_API const Mat4 MAT4_IDENTITY;
 
 BLADE_NAMESPACE_END
 
