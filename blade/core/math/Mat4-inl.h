@@ -488,34 +488,34 @@ inline Mat4T<T>& Mat4T<T>::rotate(const Vec3T<T>& axis, T radian)
 {
 	T c = std::cos(radian);
 	T s = std::sin(radian);
-	axis.normalize();
+	Vec3T<T> v = Vec3T<T>::Normalize(axis);
 
 	T t = T(1) - c;
-	T tx = t * axis.x;
-	T ty = t * axis.y;
-	T tz = t * axis.z;
-	T txy = tx * axis.y;
-	T txz = tx * axis.z;
-	T tyz = ty * axis.z;
-	T sx = s * axis.x;
-	T sy = s * axis.y;
-	T sz = s * axis.z;
+	T tx = t * v.x;
+	T ty = t * v.y;
+	T tz = t * v.z;
+	T txy = tx * v.y;
+	T txz = tx * v.z;
+	T tyz = ty * v.z;
+	T sx = s * v.x;
+	T sy = s * v.y;
+	T sz = s * v.z;
 
 	Mat4T<T> rotate;
 
-	rotate.m00 = c + tx * axis.x;
+	rotate.m00 = c + tx * v.x;
 	rotate.m10 = txy + sz;
 	rotate.m20 = txz - sy;
 	rotate.m30 = 0;
 
 	rotate.m01 = txy - sz;
-	rotate.m11 = c + ty * axis.y;
+	rotate.m11 = c + ty * v.y;
 	rotate.m21 = tyz + sx;
 	rotate.m31 = 0;
 
 	rotate.m02 = txz + sy;
 	rotate.m12 = tyz - sx;
-	rotate.m22 = c + tz * axis.z;
+	rotate.m22 = c + tz * v.z;
 	rotate.m32 = 0;
 
 	rotate.m03 = 0;
@@ -532,32 +532,32 @@ inline Mat4T<T>& Mat4T<T>::makeRotate(const Vec3T<T>& axis, T radian)
 {
 	T c = std::cos(radian);
 	T s = std::sin(radian);
-	axis.normalize();
+	Vec3T<T> v = Vec3T<T>::Normalize(axis);
 
 	T t = T(1) - c;
-	T tx = t * axis.x;
-	T ty = t * axis.y;
-	T tz = t * axis.z;
-	T txy = tx * axis.y;
-	T txz = tx * axis.z;
-	T tyz = ty * axis.z;
-	T sx = s * axis.x;
-	T sy = s * axis.y;
-	T sz = s * axis.z;
+	T tx = t * v.x;
+	T ty = t * v.y;
+	T tz = t * v.z;
+	T txy = tx * v.y;
+	T txz = tx * v.z;
+	T tyz = ty * v.z;
+	T sx = s * v.x;
+	T sy = s * v.y;
+	T sz = s * v.z;
 
-	m00 = c + tx * axis.x;
+	m00 = c + tx * v.x;
 	m10 = txy + sz;
 	m20 = txz - sy;
 	m30 = 0;
 
 	m01 = txy - sz;
-	m11 = c + ty * axis.y;
+	m11 = c + ty * v.y;
 	m21 = tyz + sx;
 	m31 = 0;
 
 	m02 = txz + sy;
 	m12 = tyz - sx;
-	m22 = c + tz * axis.z;
+	m22 = c + tz * v.z;
 	m32 = 0;
 
 	m03 = 0;
@@ -764,13 +764,13 @@ inline Mat4T<T> operator - (const Mat4T<T> &a, const Mat4T<T> &b)
 template <typename T> 
 inline Vec4T<T> operator * (const Mat4T<T> &m, const Vec4T<T> &v)
 {
-	return m.transformVec4(v);
+	return m.perspectiveTransform(v);
 }
 
 template <typename T> 
 inline Vec3T<T> operator * (const Mat4T<T> &m, const Vec3T<T> &v)
 {
-	return m.transformVec3(v);
+	return m.perspectiveTransform(v);
 }
 
 template <typename T> 

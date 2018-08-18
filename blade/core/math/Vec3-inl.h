@@ -141,6 +141,14 @@ inline Vec3T<T> Vec3T<T>::Cross(const Vec3T<T>& lhs, const Vec3T<T>& rhs)
 }
 
 template <typename T>
+inline Vec3T<T> Vec3T<T>::Normalize(const Vec3T& rhs)
+{
+	Vec3T<T> outVec(rhs);
+	outVec.normalize();
+	return outVec;
+}
+
+template <typename T>
 inline bool operator == (const Vec3T<T>& lhs, const Vec3T<T>& rhs)
 {
 	return (Math::IsEqual(lhs.x, rhs.x) && Math::IsEqual(lhs.y, rhs.y) && Math:IsEqual(lhs.z, rhs.z));

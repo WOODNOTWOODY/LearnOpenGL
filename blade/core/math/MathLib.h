@@ -5,7 +5,16 @@ BLADE_NAMESPACE_BEGIN
 
 namespace Math
 {
-	extern BLADE_CORE_API const float MAX_FLOAT;			//!< 3.402823466e+38F
+	extern BLADE_CORE_API const float PI;				//!< 3.14159265358979323846264338327950288419716939937511
+	extern BLADE_CORE_API const float PI_2;				//!< Math::PI * 2.0
+	extern BLADE_CORE_API const float PI_DIV2;			//!< Math::PI / 2.0
+	extern BLADE_CORE_API const float PI_DIV3;			//!< Math::PI / 3.0
+	extern BLADE_CORE_API const float PI_DIV4;			//!< Math::PI / 4.0
+	extern BLADE_CORE_API const float PI_DIV5;			//!< Math::PI / 5.0
+	extern BLADE_CORE_API const float PI_DIV6;			//!< Math::PI / 6.0
+	extern BLADE_CORE_API const float PI_DIV8;			//!< Math::PI / 8.0
+	extern BLADE_CORE_API const float PI_DIV180;		//!< 180 / Math::PI
+	extern BLADE_CORE_API const float MAX_FLOAT;		//!< 3.402823466e+38F
 
 	template <typename T>
 	inline bool IsEqual(T lhs, T rhs)

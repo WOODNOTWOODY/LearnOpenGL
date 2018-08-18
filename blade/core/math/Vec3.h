@@ -48,6 +48,7 @@ public:
 public:
 	static T                Dot(const Vec3T& lhs, const Vec3T& rhs);
 	static Vec3T<T>         Cross(const Vec3T& lhs, const Vec3T& rhs);
+	static Vec3T<T>         Normalize(const Vec3T& rhs);
 
 public:
 	template <typename T> friend bool     operator == (const Vec3T<T>& lhs, const Vec3T<T>& rhs);
@@ -63,6 +64,12 @@ public:
 };
 
 #include "Vec3-inl.h"
+
+typedef Vec3T<float>		Vec3;
+typedef Vec3T<int32>		Vec3i;
+typedef Vec3T<uint32>		Vec3ui;
+typedef Vec3T<float>		Vec3f;
+typedef Vec3T<double>		Vec3d;
 
 BLADE_NAMESPACE_END
 
