@@ -8,6 +8,7 @@
 #include "gles3_render/GLES3Texture.h"
 #include "gles3_render/GLES3RenderStateObject.h"
 #include "image/Image.h"
+#include "math/Mat4.h"
 
 const int WINDOW_SIZE_WIDTH = 800;
 const int WINDOW_SIZE_HEIGHT = 600;
@@ -125,6 +126,14 @@ int main(int argc, char *argv[])
 	layout->setVertexBuffer(0, vbo);
 	layout->setIndexBuffer(ebo);
 	layout->bindGPUBuffers();
+
+	float identity[16] =
+	{ 1, 0, 0, 0,
+	0, 1, 0, 0,
+	0, 0, 1, 0,
+	0, 0, 0, 1 };
+	Mat4 test(identity);
+	printf("IsIdentify:%d\n", test.isIdentify());
 
 	// render loop
 	while (renderEngine->getCurrentRenderWindow()->isActive())

@@ -6,7 +6,7 @@ inline Mat4T<T>::Mat4T()
 template <typename T>
 inline Mat4T<T>::Mat4T(const T* arr)
 {
-	memcmp(m, arr, 16 * sizeof(T));
+	memcpy(m, arr, 16 * sizeof(T));
 }
 
 template <typename T>
@@ -110,11 +110,11 @@ template <typename T>
 inline bool Mat4T<T>::isIdentify() const
 {
 	return (
-		Math::IsEqual(m00, 1) && Math::IsEqual(m10, 0) && Math::IsEqual(m20, 0) && Math::IsEqual(m30, 0) &&
-		Math::IsEqual(m01, 0) && Math::IsEqual(m11, 1) && Math::IsEqual(m21, 0) && Math::IsEqual(m31, 0) &&
-		Math::IsEqual(m02, 0) && Math::IsEqual(m12, 0) && Math::IsEqual(m22, 1) && Math::IsEqual(m32, 0) &&
-		Math::IsEqual(m03, 0) && Math::IsEqual(m13, 0) && Math::IsEqual(m23, 0) && Math::IsEqual(m33, 1)
-		)
+		Math::IsEqual(m00, (T)1) && Math::IsEqual(m10, (T)0) && Math::IsEqual(m20, (T)0) && Math::IsEqual(m30, (T)0) &&
+		Math::IsEqual(m01, (T)0) && Math::IsEqual(m11, (T)1) && Math::IsEqual(m21, (T)0) && Math::IsEqual(m31, (T)0) &&
+		Math::IsEqual(m02, (T)0) && Math::IsEqual(m12, (T)0) && Math::IsEqual(m22, (T)1) && Math::IsEqual(m32, (T)0) &&
+		Math::IsEqual(m03, (T)0) && Math::IsEqual(m13, (T)0) && Math::IsEqual(m23, (T)0) && Math::IsEqual(m33, (T)1)
+		);
 }
 
 template <typename T>
@@ -122,7 +122,7 @@ inline bool Mat4T<T>::isPerspective() const
 {
 	return (
 		Math::IsNotEqual(m30, 0) || Math::IsNotEqual(m31, 0) || Math::IsNotEqual(m32, 0) || Math::IsNotEqual(m33, 1)
-		)
+		);
 }
 
 template <typename T>
