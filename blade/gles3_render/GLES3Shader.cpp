@@ -396,6 +396,7 @@ bool ShaderProgram::parseParams()
 	}
 
 	GLint uniformCount;
+	glGetProgramiv(m_glProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &activeAttrMaxLength);
 	glGetProgramiv(m_glProgram, GL_ACTIVE_UNIFORMS, &uniformCount);
 	for (GLint i = 0; i < uniformCount; ++i)
 	{

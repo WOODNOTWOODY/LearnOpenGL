@@ -97,7 +97,7 @@ public:
 	inline void				         setArray(T* data, uint32 count)
 	{
 		uint32 elmCount = std::min(count, m_count);
-		memcpy(m_data, data, m_elementSize * elmCount);
+		memcpy(m_buffer, data, m_elementSize * elmCount);
 	}
 
 private:
