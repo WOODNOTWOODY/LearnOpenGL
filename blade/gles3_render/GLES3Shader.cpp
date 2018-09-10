@@ -403,13 +403,6 @@ bool ShaderProgram::parseParams()
 		memset(glName, 0, sizeof(glName));
 		glGetActiveUniform(m_glProgram, i, activeAttrMaxLength, &glLength, &glSize, &glType, glName);
 
-		// NVidia returns name[0] for arrays, need to strip after [
-		char* offset = strchr(glName, '[');
-		if (offset)
-		{
-			offset[0] = '\0';
-		}
-
 		GLint glLoc = glGetUniformLocation(m_glProgram, glName);
 		if (glLoc == -1)
 		{

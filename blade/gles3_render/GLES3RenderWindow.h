@@ -1,6 +1,8 @@
 #ifndef __BLADE_GLES3RENDERWINDOW_H__
 #define __BLADE_GLES3RENDERWINDOW_H__
 
+#include "camera/Camera.h"
+
 BLADE_NAMESPACE_BEGIN
 
 struct WindowSetting
@@ -31,7 +33,7 @@ public:
 	void                            destroy();
 	void                            swapBuffers();
 	bool                            isActive();
-	void                            processInput();
+	void                            processInput(Camera* camera, float deltaTime);
 	void                            pollEvents();
 
 	inline const std::string&		getName() const { return m_name; }

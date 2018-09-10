@@ -84,6 +84,14 @@ public:
 	{ 
 		uint32 size = std::min(buff.size(), m_size);
 		memcpy(m_buffer, buff.data(), size);
+		m_bDirty = true;
+	}
+
+	inline void                      setData(void* data, uint32 size)
+	{
+		size = std::min(size, m_size);
+		memcpy(m_buffer, data, size);
+		m_bDirty = true;
 	}
 
 	template <typename T>
@@ -91,6 +99,7 @@ public:
 	{
 		uint32 size = std::min((uint32)sizeof(T), m_size);
 		memcpy(m_buffer, &data, size);
+		m_bDirty = true;
 	}
 
 	template <typename T>
@@ -98,6 +107,7 @@ public:
 	{
 		uint32 elmCount = std::min(count, m_count);
 		memcpy(m_buffer, data, m_elementSize * elmCount);
+		m_bDirty = true;
 	}
 
 private:

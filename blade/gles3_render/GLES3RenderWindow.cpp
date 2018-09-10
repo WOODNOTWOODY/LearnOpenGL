@@ -50,6 +50,8 @@ bool RenderWindow::initialize(const WindowSetting& setting)
 		return false;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	glViewport(0, 0, m_width, m_height);
 
 	return true;
@@ -71,11 +73,36 @@ bool RenderWindow::isActive()
 	return !glfwWindowShouldClose(m_glfwWindow);
 }
 
-void RenderWindow::processInput()
+void RenderWindow::processInput(Camera* camera, float deltaTime)
 {
 	if (glfwGetKey(m_glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 	{
 		glfwSetWindowShouldClose(m_glfwWindow, true);
+	}
+
+	if (glfwGetKey(m_glfwWindow, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		Vec3 offset = Vec3(0, 0, -1);
+		offset *= (2.5 * deltaTime);
+		camera->move(offset);
+	}
+	if (glfwGetKey(m_glfwWindow, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		Vec3 offset = Vec3(0, 0, 1);
+		offset *= (2.5 * deltaTime);
+		camera->move(offset);
+	}
+	if (glfwGetKey(m_glfwWindow, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		Vec3 offset = -camera->getRight();
+		offset *= (2.5 * deltaTime);
+		camera->move(offset);
+	}
+	if (glfwGetKey(m_glfwWindow, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		Vec3 offset = camera->getRight();
+		offset *= (2.5 * deltaTime);
+		camera->move(offset);
 	}
 }
 
