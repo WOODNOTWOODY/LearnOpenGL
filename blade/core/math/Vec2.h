@@ -62,6 +62,12 @@ public:
 
 #include "Vec2-inl.h"
 
+typedef Vec2T<float>		Vec2;
+typedef Vec2T<int32>		Vec2i;
+typedef Vec2T<uint32>		Vec2ui;
+typedef Vec2T<float>		Vec2f;
+typedef Vec2T<double>		Vec2d;
+
 BLADE_NAMESPACE_END
 
 #endif

@@ -95,6 +95,45 @@ Image* Image::createFromMemory(const Buffer &buff, ImageFormat imgFmt, bool bLoa
 	return pImage;
 }
 
+bool Image::saveToFile(const std::string &filename, ImageFormat imgFmt)
+{
+	if (!m_data)
+	{
+		printf("No image data loaded.\n");
+		return false;
+	}
+
+	if (imgFmt == IF_UNKNOWN)
+	{
+		imgFmt = Image::getImageFormatByExt(PathUtil::getFileExt(filename));
+		if (imgFmt == IF_UNKNOWN)
+		{
+			printf("Unknown image format.\n");
+			return false;
+		}
+	}
+
+	ImageCodec *pSTBImageCodec = new STBImageCodec(imgFmt);
+	if (!pSTBImageCodec)
+	{
+		printf("Not found image format [%s] codec.\n", Image::getImageFormatExt(imgFmt).c_str());
+		return false;
+	}
+
+	ImageInfo imgInfo;
+	imgInfo.width = m_width;
+	imgInfo.height = m_height;
+	imgInfo.depth = m_depth;
+	imgInfo.size = m_size;
+	imgInfo.format = m_format;
+
+	Buffer buff;
+	buff.attach(m_size, m_data);
+	bool bOK = pSTBImageCodec->encodeToFile(imgFmt, buff, imgInfo, filename);
+	buff.detach();
+	return bOK;
+}
+
 void Image::destroy()
 {
 	BLADE_SAFE_FREE(m_data);
@@ -136,6 +175,13 @@ ImageFormat Image::getImageFormatByExt(const std::string &imgExt)
 		return IF_JPG;
 	else
 		return IF_UNKNOWN;
+}
+
+Color Image::getColor(int x, int y, int z) const
+{
+	Color rval;
+	ElementUtil::UnpackColor(rval, m_format, &m_data[m_pixelSize * (z * m_width * m_height + m_width * y + x)]);
+	return rval;
 }
 
 uint32 Image::calculateSize(uint32 mipmaps, uint32 faces, uint32 width, uint32 height, uint32 depth, ElementFormat format)

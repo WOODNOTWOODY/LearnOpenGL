@@ -59,6 +59,7 @@ public:
 
 public:
 	static Image*				createFromMemory(const Buffer &buff, ImageFormat imgFmt, bool bLoadSplitAlpha = false);
+	bool						saveToFile(const std::string &filename, ImageFormat imgFmt = IF_UNKNOWN);
 	void						destroy();
 
 	inline bool					hasFlag(ImageFlags imgFlag) const { return ((m_flags & imgFlag) != 0); }
@@ -79,6 +80,12 @@ public:
 	static std::string			getImageFormatExt(ImageFormat imgFmt);
 	static ImageFormat			getImageFormat(const std::string &filename);
 	static ImageFormat			getImageFormatByExt(const std::string &imgExt);
+
+	/**
+	* Get color value from a certain location in the image. The z coordinate
+	* is only valid for cubemap and volume textures. This uses the first (largest) mipmap.
+	*/
+	Color						getColor(int x, int y, int z = 0) const;
 	
 	// Static function to calculate size in bytes from the number of mipmaps, faces and the dimensions
 	static uint32				calculateSize(uint32 mipmaps, uint32 faces, uint32 width, uint32 height, uint32 depth, ElementFormat format);

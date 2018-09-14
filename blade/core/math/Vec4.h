@@ -62,6 +62,12 @@ public:
 
 #include "Vec4-inl.h"
 
+typedef Vec4T<float>		Vec4;
+typedef Vec4T<int32>		Vec4i;
+typedef Vec4T<uint32>		Vec4ui;
+typedef Vec4T<float>		Vec4f;
+typedef Vec4T<double>		Vec4d;
+
 BLADE_NAMESPACE_END
 
 #endif

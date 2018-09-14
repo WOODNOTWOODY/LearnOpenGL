@@ -216,4 +216,357 @@ uint32 ElementUtil::CalcSurfaceSize(uint32 width, uint32 height, uint32 depth, u
 	return memSize;
 }
 
+void ElementUtil::UnpackColor(Color &color, ElementFormat format, const void *pSrc)
+{
+	UnpackColor(color.r, color.g, color.b, color.a, format, pSrc);
+}
+
+void ElementUtil::UnpackColor(float &r, float &g, float &b, float &a, ElementFormat format, const void *src)
+{
+	if (ELEMENT_IS_NATIVE_ENDIAN(format))
+	{
+		// Shortcut for integer formats unpacking
+		const uint32 value = Math::IntRead(src, ELEMENT_CHANNEL_COUNT(format));
+
+		uint32 bitShift = 0;
+		if (ELEMENT_HAS_ALPHA(format))
+		{
+			uint32 ch3Bits = ELEMENT_CHANNEL_BITS(format, EC_A);
+			uint32 ch3Mask = (1 << ch3Bits) - 1;
+			a = Math::FixedToFloat(value & ch3Mask, ch3Bits);
+
+			bitShift = ch3Bits;
+		}
+		else
+		{
+			a = 1.0f; // No alpha, default a component to full
+		}
+
+		uint32 ch2Bits = ELEMENT_CHANNEL_BITS(format, EC_B);
+		uint32 ch2Mask = (1 << ch2Bits) - 1;
+		b = Math::FixedToFloat((value >> bitShift) & ch2Mask, ch2Bits);
+		bitShift += ch2Bits;
+
+		uint32 ch1Bits = ELEMENT_CHANNEL_BITS(format, EC_G);
+		uint32 ch1Mask = (1 << ch1Bits) - 1;
+		g = Math::FixedToFloat((value >> bitShift) & ch1Mask, ch1Bits);
+		bitShift += ch1Bits;
+
+		uint32 ch0Bits = ELEMENT_CHANNEL_BITS(format, EC_R);
+		uint32 ch0Mask = (1 << ch0Bits) - 1;
+		r = Math::FixedToFloat((value >> bitShift) & ch0Mask, ch0Bits);
+	}
+	else
+	{
+		switch (format)
+		{
+		case EF_R32_FLOAT:
+		{
+			r = g = b = ((float*)src)[0];
+			a = 1.0f;
+		} break;
+		case EF_RG32_FLOAT:
+		{
+			r = ((float*)src)[0];
+			g = b = ((float*)src)[1];
+			a = 1.0f;
+		} break;
+		case EF_RGB32_FLOAT:
+		{
+			r = ((float*)src)[0];
+			g = ((float*)src)[1];
+			b = ((float*)src)[2];
+			a = 1.0f;
+		} break;
+		case EF_RGBA32_FLOAT:
+		{
+			r = ((float*)src)[0];
+			g = ((float*)src)[1];
+			b = ((float*)src)[2];
+			a = ((float*)src)[3];
+		} break;
+		case EF_R16_FLOAT:
+		{
+			r = g = b = Math::HalfToFloat(((uint16*)src)[0]);
+			a = 1.0f;
+		} break;
+		case EF_RG16_FLOAT:
+		{
+			g = Math::HalfToFloat(((uint16*)src)[0]);
+			r = b = Math::HalfToFloat(((uint16*)src)[1]);
+			a = 1.0f;
+		} break;
+		case EF_RGB16_FLOAT:
+		{
+			r = Math::HalfToFloat(((uint16*)src)[0]);
+			g = Math::HalfToFloat(((uint16*)src)[1]);
+			b = Math::HalfToFloat(((uint16*)src)[2]);
+			a = 1.0f;
+		} break;
+		case EF_RGBA16_FLOAT:
+		{
+			r = Math::HalfToFloat(((uint16*)src)[0]);
+			g = Math::HalfToFloat(((uint16*)src)[1]);
+			b = Math::HalfToFloat(((uint16*)src)[2]);
+			a = Math::HalfToFloat(((uint16*)src)[3]);
+		} break;
+		case EF_RGB32_UINT:
+		{
+			r = (float)(((uint32*)src)[0]);
+			g = (float)(((uint32*)src)[1]);
+			b = (float)(((uint32*)src)[2]);
+			a = 1.0f;
+		} break;
+		case EF_RGB32_SINT:
+		{
+			r = (float)(((int32*)src)[0]);
+			g = (float)(((int32*)src)[1]);
+			b = (float)(((int32*)src)[2]);
+			a = 1.0f;
+		} break;
+		case EF_RGBA32_UINT:
+		{
+			r = (float)(((uint32*)src)[0]);
+			g = (float)(((uint32*)src)[1]);
+			b = (float)(((uint32*)src)[2]);
+			a = (float)(((uint32*)src)[3]);
+		} break;
+		case EF_RGBA32_SINT:
+		{
+			r = (float)(((int32*)src)[0]);
+			g = (float)(((int32*)src)[1]);
+			b = (float)(((int32*)src)[2]);
+			a = (float)(((int32*)src)[3]);
+		} break;
+		case EF_RGB16:
+		{
+			r = Math::FixedToFloat(((uint16*)src)[0], 16);
+			g = Math::FixedToFloat(((uint16*)src)[1], 16);
+			b = Math::FixedToFloat(((uint16*)src)[2], 16);
+			a = 1.0f;
+		} break;
+		case EF_RGB16_SNORM:
+		{
+			r = Math::FixedToFloat(((int16*)src)[0], 16);
+			g = Math::FixedToFloat(((int16*)src)[1], 16);
+			b = Math::FixedToFloat(((int16*)src)[2], 16);
+			a = 1.0f;
+		} break;
+		case EF_RGB16_UINT:
+		{
+			r = (float)(((uint16*)src)[0]);
+			g = (float)(((uint16*)src)[1]);
+			b = (float)(((uint16*)src)[2]);
+			a = 1.0f;
+		} break;
+		case EF_RGB16_SINT:
+		{
+			r = (float)(((int16*)src)[0]);
+			g = (float)(((int16*)src)[1]);
+			b = (float)(((int16*)src)[2]);
+			a = 1.0f;
+		} break;
+		case EF_RGBA16:
+		{
+			r = Math::FixedToFloat(((uint16*)src)[0], 16);
+			g = Math::FixedToFloat(((uint16*)src)[1], 16);
+			b = Math::FixedToFloat(((uint16*)src)[2], 16);
+			a = Math::FixedToFloat(((uint16*)src)[3], 16);
+		} break;
+		case EF_RGBA16_SNORM:
+		{
+			r = Math::FixedToFloat(((int16*)src)[0], 16);
+			g = Math::FixedToFloat(((int16*)src)[1], 16);
+			b = Math::FixedToFloat(((int16*)src)[2], 16);
+			a = Math::FixedToFloat(((int16*)src)[3], 16);
+		} break;
+		case EF_RGBA16_UINT:
+		{
+			r = (float)(((uint16*)src)[0]);
+			g = (float)(((uint16*)src)[1]);
+			b = (float)(((uint16*)src)[2]);
+			a = (float)(((uint16*)src)[3]);
+		} break;
+		case EF_RGBA16_SINT:
+		{
+			r = (float)(((int16*)src)[0]);
+			g = (float)(((int16*)src)[1]);
+			b = (float)(((int16*)src)[2]);
+			a = (float)(((int16*)src)[3]);
+		} break;
+		default:
+		{
+			// Not yet supported
+			printf("unpack from PixelFormat [%s] not implemented\n", ElementUtil::GetFormatName(format).c_str());
+		} break;
+		}
+	}
+}
+
+void ElementUtil::PackColor(const Color &color, ElementFormat format, void *dst)
+{
+	PackColor((float)color.r, (float)color.g, (float)color.b, (float)color.a, format, dst);
+}
+
+void ElementUtil::PackColor(float r, float g, float b, float a, ElementFormat format, void *dst)
+{
+	if (ELEMENT_IS_NATIVE_ENDIAN(format))
+	{
+		// Do the packing
+		uint32 ch3Bits = ELEMENT_CHANNEL_BITS(format, EC_R);
+		uint32 ch3Mask = (1 << ch3Bits) - 1;
+		uint32 value = ((Math::FloatToFixed(r, ch3Bits) & ch3Mask));
+		uint32 bitShift = ch3Bits;
+
+		uint32 ch2Bits = ELEMENT_CHANNEL_BITS(format, EC_G);
+		uint32 ch2Mask = (1 << ch2Bits) - 1;
+		value |= ((Math::FloatToFixed(g, ch2Bits) & ch2Mask) << bitShift);
+		bitShift += ch2Bits;
+
+		uint32 ch1Bits = ELEMENT_CHANNEL_BITS(format, EC_B);
+		uint32 ch1Mask = (1 << ch1Bits) - 1;
+		value |= ((Math::FloatToFixed(b, ch1Bits) & ch1Mask) << bitShift);
+		bitShift += ch1Bits;
+
+		uint32 ch0Bits = ELEMENT_CHANNEL_BITS(format, EC_A);
+		uint32 ch0Mask = (1 << ch0Bits) - 1;
+		value |= ((Math::FloatToFixed(a, ch0Bits) & ch0Mask) << bitShift);
+
+		// And write to memory
+		Math::IntWrite(dst, ELEMENT_SIZE(format), value);
+	}
+	else
+	{
+		switch (format)
+		{
+		case EF_R32_FLOAT:
+		{
+			((float*)dst)[0] = r;
+		} break;
+		case EF_RG32_FLOAT:
+		{
+			((float*)dst)[0] = g;
+			((float*)dst)[1] = r;
+		} break;
+		case EF_RGB32_FLOAT:
+		{
+			((float*)dst)[0] = r;
+			((float*)dst)[1] = g;
+			((float*)dst)[2] = b;
+		} break;
+		case EF_RGBA32_FLOAT:
+		{
+			((float*)dst)[0] = r;
+			((float*)dst)[1] = g;
+			((float*)dst)[2] = b;
+			((float*)dst)[3] = a;
+		} break;
+		case EF_R16_FLOAT:
+		{
+			((uint16*)dst)[0] = Math::FloatToHalf(r);
+		} break;
+		case EF_RG16_FLOAT:
+		{
+			((uint16*)dst)[0] = Math::FloatToHalf(g);
+			((uint16*)dst)[1] = Math::FloatToHalf(r);
+		} break;
+		case EF_RGB16_FLOAT:
+		{
+			((uint16*)dst)[0] = Math::FloatToHalf(r);
+			((uint16*)dst)[1] = Math::FloatToHalf(g);
+			((uint16*)dst)[2] = Math::FloatToHalf(b);
+		} break;
+		case EF_RGBA16_FLOAT:
+		{
+			((uint16*)dst)[0] = Math::FloatToHalf(r);
+			((uint16*)dst)[1] = Math::FloatToHalf(g);
+			((uint16*)dst)[2] = Math::FloatToHalf(b);
+			((uint16*)dst)[3] = Math::FloatToHalf(a);
+		} break;
+		case EF_RGB32_UINT:
+		{
+			((uint32*)dst)[0] = (uint32)r;
+			((uint32*)dst)[1] = (uint32)g;
+			((uint32*)dst)[2] = (uint32)b;
+		} break;
+		case EF_RGB32_SINT:
+		{
+			((int32*)dst)[0] = (int32)r;
+			((int32*)dst)[1] = (int32)g;
+			((int32*)dst)[2] = (int32)b;
+		} break;
+		case EF_RGBA32_UINT:
+		{
+			((uint32*)dst)[0] = (uint32)r;
+			((uint32*)dst)[1] = (uint32)g;
+			((uint32*)dst)[2] = (uint32)b;
+			((uint32*)dst)[3] = (uint32)a;
+		} break;
+		case EF_RGBA32_SINT:
+		{
+			((int32*)dst)[0] = (int32)r;
+			((int32*)dst)[1] = (int32)g;
+			((int32*)dst)[2] = (int32)b;
+			((int32*)dst)[3] = (int32)a;
+		} break;
+		case EF_RGB16:
+		{
+			((uint16*)dst)[0] = (uint16)Math::FloatToFixed(r, 16);
+			((uint16*)dst)[1] = (uint16)Math::FloatToFixed(g, 16);
+			((uint16*)dst)[2] = (uint16)Math::FloatToFixed(b, 16);
+		} break;
+		case EF_RGB16_SNORM:
+		{
+			((uint16*)dst)[0] = (uint16)Math::FloatToFixed(r, 16);
+			((uint16*)dst)[1] = (uint16)Math::FloatToFixed(g, 16);
+			((uint16*)dst)[2] = (uint16)Math::FloatToFixed(b, 16);
+		} break;
+		case EF_RGB16_UINT:
+		{
+			((uint16*)dst)[0] = (uint16)r;
+			((uint16*)dst)[1] = (uint16)g;
+			((uint16*)dst)[2] = (uint16)b;
+		} break;
+		case EF_RGB16_SINT:
+		{
+			((int16*)dst)[0] = (int16)r;
+			((int16*)dst)[1] = (int16)g;
+			((int16*)dst)[2] = (int16)b;
+		} break;
+		case EF_RGBA16:
+		{
+			((uint16*)dst)[0] = (uint16)Math::FloatToFixed(r, 16);
+			((uint16*)dst)[1] = (uint16)Math::FloatToFixed(g, 16);
+			((uint16*)dst)[2] = (uint16)Math::FloatToFixed(b, 16);
+			((uint16*)dst)[3] = (uint16)Math::FloatToFixed(a, 16);
+		} break;
+		case EF_RGBA16_SNORM:
+		{
+			((int16*)dst)[0] = (int16)Math::FloatToFixed(r, 16);
+			((int16*)dst)[1] = (int16)Math::FloatToFixed(g, 16);
+			((int16*)dst)[2] = (int16)Math::FloatToFixed(b, 16);
+			((int16*)dst)[3] = (int16)Math::FloatToFixed(a, 16);
+		} break;
+		case EF_RGBA16_UINT:
+		{
+			((uint16*)dst)[0] = (uint16)r;
+			((uint16*)dst)[1] = (uint16)g;
+			((uint16*)dst)[2] = (uint16)b;
+			((uint16*)dst)[3] = (uint16)a;
+		} break;
+		case EF_RGBA16_SINT:
+		{
+			((int16*)dst)[0] = (int16)r;
+			((int16*)dst)[1] = (int16)g;
+			((int16*)dst)[2] = (int16)b;
+			((int16*)dst)[3] = (int16)a;
+		} break;
+		default:
+			// Not yet supported
+			printf("unpack from PixelFormat [%s] not implemented\n", GetFormatName(format).c_str());
+			break;
+		}
+	}
+}
+
 BLADE_NAMESPACE_END

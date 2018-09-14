@@ -12,6 +12,7 @@ public:
 	virtual ~STBImageCodec();
 
 public:
+	bool				encodeToFile(ImageFormat imgFmt, const Buffer &buff, const ImageInfo &imgInfo, const std::string &filename) const;
 	bool				encode(Buffer &dstBuff, const Buffer &srcBuff, const ImageInfo &imgInfo) const;
 	bool				decode(Buffer &dstBuff, ImageInfo &imgInfo, const Buffer &srcBuff, bool bLoadSplitAlpha);
 

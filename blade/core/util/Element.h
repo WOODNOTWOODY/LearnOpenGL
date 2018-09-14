@@ -224,6 +224,11 @@ public:
 	static ElementFormat		GetElement4Format(uint64 c0, uint64 c1, uint64 c2, uint64 c3, uint64 s0, uint64 s1, uint64 s2, uint64 s3, uint64 t0, uint64 t1, uint64 t2, uint64 t3, uint64 tag = 0);
 
 	static uint32				CalcSurfaceSize(uint32 width, uint32 height, uint32 depth, uint32 mipmaps, ElementFormat format);
+
+	static void					UnpackColor(Color &color, ElementFormat format, const void *pSrc);
+	static void					UnpackColor(float &r, float &g, float &b, float &a, ElementFormat format, const void *pSrc);
+	static void					PackColor(const Color &color, ElementFormat format, void *pDest);
+	static void					PackColor(float r, float g, float b, float a, ElementFormat format, void *pDest);
 	
 };
 

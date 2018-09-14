@@ -7,6 +7,75 @@
 
 BLADE_NAMESPACE_BEGIN
 
+static const Buffer* encodeBitmap(const Buffer& buff, const ImageInfo& imgInfo, Buffer& convBuff, int& comp)
+{
+	ElementFormat srcFormat = imgInfo.format;
+	ElementFormat requiredFormat = srcFormat;
+
+	std::string name = ElementUtil::GetFormatName(srcFormat);
+
+	switch (srcFormat)
+	{
+	case EF_R5G6B5:
+	case EF_RGB8:
+	case EF_RGBA8:
+	case EF_RG8:
+	case EF_RGBA4:
+	case EF_RGB5A1:
+	case EF_RGB10A2:
+	case EF_A8:
+	case EF_R8:
+		if (ELEMENT_HAS_ALPHA(srcFormat))
+		{
+			requiredFormat = EF_RGBA8;
+			comp = 4;
+		}
+		else
+		{
+			requiredFormat = EF_RGB8;
+			comp = 3;
+		}
+		break;
+	default:
+		printf("STBI encodeBitmap: invalid image format.\n");
+		return NULL;
+	};
+
+
+	if (requiredFormat != srcFormat)
+	{
+		int size = ElementUtil::GetMemorySize(imgInfo.width, imgInfo.height, 1, requiredFormat);
+		convBuff.allocate(size);
+
+		const size_t srcPixelSize = ELEMENT_SIZE(srcFormat);
+		const size_t dstPixelSize = ELEMENT_SIZE(requiredFormat);
+		uint8* srcptr = buff.data();
+		uint8* dstptr = convBuff.data();
+
+		// Calculate pitches+skips in bytes
+		const size_t srcRowSkipBytes = 0;
+		const size_t dstRowSkipBytes = 0;
+
+		// The brute force fallback
+		float r = 0, g = 0, b = 0, a = 1;
+		for (size_t y = 0; y<imgInfo.height; y++)
+		{
+			for (size_t x = 0; x<imgInfo.width; x++)
+			{
+				ElementUtil::UnpackColor(r, g, b, a, srcFormat, srcptr);
+				ElementUtil::PackColor(r, g, b, a, requiredFormat, dstptr);
+				srcptr += srcPixelSize;
+				dstptr += dstPixelSize;
+			}
+			srcptr += srcRowSkipBytes;
+			dstptr += dstRowSkipBytes;
+		}
+		return &convBuff;
+	}
+
+	return &buff;
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////
 STBImageCodec::STBImageCodec(ImageFormat imgFmt)
 	: ImageCodec(imgFmt)
@@ -15,6 +84,28 @@ STBImageCodec::STBImageCodec(ImageFormat imgFmt)
 
 STBImageCodec::~STBImageCodec()
 {
+}
+
+bool STBImageCodec::encodeToFile(ImageFormat imgFmt, const Buffer &buff, const ImageInfo &imgInfo, const std::string &filename) const
+{
+	if (imgFmt == IF_PNG)
+	{
+		Buffer convBuff;
+		int comp;
+		const Buffer* retbuff = encodeBitmap(buff, imgInfo, convBuff, comp);
+		if (retbuff)
+		{
+			if (imgFmt == IF_PNG)
+			{
+				stbi_write_png(filename.c_str(), imgInfo.width, imgInfo.height, comp, retbuff->data(), imgInfo.width*comp);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	printf("STBI encodeToFile not supported imgfmt: %d.\n", imgFmt);
+	return false;
 }
 
 bool STBImageCodec::encode(Buffer &dstBuff, const Buffer& srcBuff, const ImageInfo &imgInfo) const
