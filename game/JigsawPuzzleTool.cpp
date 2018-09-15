@@ -94,7 +94,7 @@ static void thread_task(ThreadTask* task)
 			char tempPath[256];
 			sprintf(tempPath, "%sworld%u.png", dirName.c_str(), charId);
 			PathUtil::getFileData(buff2, tempPath);
-			ImageFormat imgFmt = Image::getImageFormat(fileName);
+			ImageFormat imgFmt = Image::getImageFormat(tempPath);
 			Image *pImage = Image::createFromMemory(buff2, imgFmt, false);
 
 			Buffer buff3;
@@ -196,7 +196,7 @@ static void thread_task(ThreadTask* task)
 
 static bool doTask(ThreadTask* task)
 {
-	int threadCount = 2 * (int)std::thread::hardware_concurrency();
+	int threadCount = (int)std::thread::hardware_concurrency();
 	if (threadCount > (int)task->files->size()) threadCount = (int)task->files->size();
 
 	std::thread** threads = new std::thread*[threadCount];
@@ -265,7 +265,11 @@ int main(int argc, char *argv[])
 		saveBuff.write(tempStr.c_str(), tempStr.size());
 		for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2)
 		{
-			sprintf(temp, "[%u] = {%u, %u}, ", it2->first, 2 * it2->second.x - 1, 2 * it2->second.y - 1);
+			int32 x = 2 * it2->second.x - 1;
+			int32 y = 2 * it2->second.y - 1;
+			if (x < 0) x = 0;
+			if (y < 0) y = 0;
+			sprintf(temp, "[%u] = {%u, %u}, ", it2->first, x, y);
 			tempStr = temp;
 			saveBuff.write(tempStr.c_str(), tempStr.size());
 		}
