@@ -65,7 +65,7 @@ static void thread_task(ThreadTask* task)
 		std::string fileName = PathUtil::getPureFilename(file);
 		std::string dirName = PathUtil::getFileDirPath(file);
 		size_t firstOffset = fileName.find("_");
-		size_t lastOffset = fileName.find("_b.png");
+		size_t lastOffset = fileName.find("_k.png");
 		if (lastOffset != std::string::npos)
 		{
 			printf("begin task:%s\n", file.c_str());
@@ -90,20 +90,29 @@ static void thread_task(ThreadTask* task)
 			}
 			task->mutex.unlock();
 
-			Buffer buff1;
-			PathUtil::getFileData(buff1, file);
-			ImageFormat imgFmt = Image::getImageFormat(fileName);
-			Image *pImage = Image::createFromMemory(buff1, imgFmt, false);
-
 			Buffer buff2;
 			char tempPath[256];
-			sprintf(tempPath, "%sw%u_%u_k.png", dirName.c_str(), charId, pieceId);
+			sprintf(tempPath, "%sworld%u.png", dirName.c_str(), charId);
 			PathUtil::getFileData(buff2, tempPath);
-			Image *pTemplateImage = Image::createFromMemory(buff2, imgFmt, false);
+			ImageFormat imgFmt = Image::getImageFormat(fileName);
+			Image *pImage = Image::createFromMemory(buff2, imgFmt, false);
+
+			Buffer buff3;
+			sprintf(tempPath, "%sw%u_%u_b.png", dirName.c_str(), charId, pieceId);
+			PathUtil::getFileData(buff3, tempPath);
+			Image *pBackgroundImage = Image::createFromMemory(buff3, imgFmt, false);
+
+			float scaleWidth = (float)pImage->getWidth() / (float)pBackgroundImage->getWidth();
+			float scaleHeight = (float)pImage->getHeight() / (float)pBackgroundImage->getHeight();
+			
+			Buffer buff1;
+			PathUtil::getFileData(buff1, file);
+			Image *pTemplateImage = Image::createFromMemory(buff1, imgFmt, false);
+			pTemplateImage->scale(pTemplateImage->getWidth() * scaleWidth, pTemplateImage->getHeight() * scaleHeight, IMGFILTER_BILINEAR);
 
 			float minMatchDegree = Math::MAX_FLOAT;
-			Vec4i box(pImage->getWidth(), pImage->getHeight(), 0, 0);
-			for (int i = 0; i < pImage->getWidth(); ++i)
+			Vec4i box(0, 0, 0, 0);
+			/*for (int i = 0; i < pImage->getWidth(); ++i)
 			{
 				for (int j = 0; j < pImage->getHeight(); ++j)
 				{
@@ -143,11 +152,11 @@ static void thread_task(ThreadTask* task)
 						if (j > box.w) box.w = j;
 					}
 				}
-			}
+			}*/
 
-			for (int i = box.x; i <= (pImage->getWidth() - pTemplateImage->getHeight()); ++i)
+			for (int i = 0; i <= (pImage->getWidth() - pTemplateImage->getWidth()); ++i)
 			{
-				for (int j = box.y; j <= (pImage->getHeight() - pTemplateImage->getHeight()); ++j)
+				for (int j = 0; j <= (pImage->getHeight() - pTemplateImage->getHeight()); ++j)
 				{
 					float matchDegree = 0.0f;
 					for (int m = 0; m < pTemplateImage->getWidth(); ++m)
@@ -256,7 +265,7 @@ int main(int argc, char *argv[])
 		saveBuff.write(tempStr.c_str(), tempStr.size());
 		for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2)
 		{
-			sprintf(temp, "[%u] = {%u, %u}, ", it2->first, it2->second.x, it2->second.y);
+			sprintf(temp, "[%u] = {%u, %u}, ", it2->first, 2 * it2->second.x - 1, 2 * it2->second.y - 1);
 			tempStr = temp;
 			saveBuff.write(tempStr.c_str(), tempStr.size());
 		}

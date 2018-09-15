@@ -1,9 +1,116 @@
 #include "CoreStd.h"
 #include "Element.h"
+#include "PixelConversions.h"
 
 BLADE_NAMESPACE_BEGIN
 
 #define TOSTR(s) #s
+
+PixelBox::PixelBox() :
+left(0), top(0), right(1), bottom(1), front(0), back(1),
+format(EF_UNKNOWN)
+{
+}
+
+PixelBox::PixelBox(uint32 width, uint32 height, uint32 depth, ElementFormat format, void *pPixData) :
+left(0), top(0), right(width), bottom(height), front(0), back(depth),
+data(pPixData), format(format)
+{
+	setConsecutive();
+}
+
+PixelBox::PixelBox(uint32 left, uint32 top, uint32 right, uint32 bottom, uint32 depth, ElementFormat format, void *pPixData) :
+left(left), top(top), right(right), bottom(bottom), front(0), back(depth),
+data(pPixData), format(format)
+{
+	setConsecutive();
+}
+
+PixelBox::~PixelBox()
+{
+}
+
+void PixelBox::setConsecutive()
+{
+	rowPitch = getWidth();
+	slicePitch = getWidth()*getHeight();
+}
+
+uint32 PixelBox::getRowSkip() const
+{
+	return (rowPitch - getWidth());
+}
+
+uint32 PixelBox::getSliceSkip() const
+{
+	return (slicePitch - getHeight() * rowPitch);
+}
+
+bool PixelBox::isConsecutive() const
+{
+	return (rowPitch == getWidth() && slicePitch == getWidth()*getHeight());
+}
+
+uint32 PixelBox::getConsecutiveSize() const
+{
+	return ElementUtil::GetMemorySize(getWidth(), getHeight(), getDepth(), format);
+}
+
+bool PixelBox::getSubVolume(PixelBox &out, const PixelBox &def) const
+{
+	if (ELEMENT_IS_COMPRESSED(format))
+	{
+		if (def.left == left && def.top == top && def.front == front &&
+			def.right == right && def.bottom == bottom && def.back == back)
+		{
+			// Entire buffer is being queried
+			out = *this;
+			return true;
+		}
+
+		printf("Cannot return subvolume of compressed PixelBuffer\n");
+		return false;
+	}
+
+	if (!contains(def))
+	{
+		printf("Bounds out of range\n");
+		return false;
+	}
+
+	const uint32 pixSize = ELEMENT_SIZE(format);
+
+	// Calculate new data origin
+	// Notice how we do not propagate left/top/front from the incoming box, since
+	// the returned pointer is already offset
+	PixelBox rval(def.getWidth(), def.getHeight(), def.getDepth(), format,
+		((uint8*)data) + ((def.left - left)*pixSize) + ((def.top - top)*rowPitch*pixSize) + ((def.front - front)*slicePitch*pixSize));
+
+	rval.rowPitch = rowPitch;
+	rval.slicePitch = slicePitch;
+
+	out = rval;
+
+	return true;
+}
+
+Color PixelBox::getColor(uint32 x, uint32 y, uint32 z) const
+{
+	Color color;
+
+	Byte pixelSize = ELEMENT_SIZE(format);
+	size_t pixelOffset = pixelSize * (z * slicePitch + y * rowPitch + x);
+	ElementUtil::UnpackColor(color, format, (Byte*)data + pixelOffset);
+
+	return color;
+}
+
+void PixelBox::setColor(const Color &color, uint32 x, uint32 y, uint32 z)
+{
+	Byte pixelSize = ELEMENT_SIZE(format);
+	size_t pixelOffset = pixelSize * (z * slicePitch + y * rowPitch + x);
+	ElementUtil::PackColor(color, format, (Byte*)data + pixelOffset);
+}
 
 std::string ElementUtil::GetFormatName(ElementFormat format)
 {
@@ -566,6 +673,159 @@ void ElementUtil::PackColor(float r, float g, float b, float a, ElementFormat fo
 			printf("unpack from PixelFormat [%s] not implemented\n", GetFormatName(format).c_str());
 			break;
 		}
+	}
+}
+
+bool ElementUtil::BulkPixelVerticalFlip(PixelBox& box)
+{
+	// Check for compressed formats, we don't support decompression, compression or recoding
+	if (ELEMENT_IS_COMPRESSED(box.format))
+	{
+		printf("It can not be used for compressed formats.\n");
+		return false;
+	}
+
+	const size_t pixelSize = ELEMENT_SIZE(box.format);
+	const size_t copySize = (box.right - box.left) * pixelSize;
+
+	// Calculate pitches in bytes
+	const size_t rowPitchBytes = box.rowPitch * pixelSize;
+	const size_t slicePitchBytes = box.slicePitch * pixelSize;
+
+	Byte *basesrcptr = static_cast<Byte*>(box.data)
+		+ (box.left + box.top * box.rowPitch + box.front * box.slicePitch) * pixelSize;
+	Byte *basedstptr = basesrcptr + (box.bottom - box.top - 1) * rowPitchBytes;
+	Byte* tmpptr = (Byte*)BLADE_MALLOC(copySize);
+
+	// swap rows
+	const size_t halfRowCount = (box.bottom - box.top) >> 1;
+	for (size_t z = box.front; z < box.back; ++z)
+	{
+		Byte* srcptr = basesrcptr;
+		Byte* dstptr = basedstptr;
+		for (size_t y = 0; y < halfRowCount; y++)
+		{
+			// swap rows
+			memcpy(tmpptr, dstptr, copySize);
+			memcpy(dstptr, srcptr, copySize);
+			memcpy(srcptr, tmpptr, copySize);
+			srcptr += rowPitchBytes;
+			dstptr -= rowPitchBytes;
+		}
+		basesrcptr += slicePitchBytes;
+		basedstptr += slicePitchBytes;
+	}
+
+	BLADE_FREE(tmpptr);
+
+	return true;
+}
+
+void ElementUtil::BulkPixelConversion(void *pSrcData, ElementFormat srcFormat, void *pDestData, ElementFormat dstFormat, uint32 count)
+{
+	PixelBox src(count, 1, 1, srcFormat, pSrcData);
+	PixelBox dst(count, 1, 1, dstFormat, pDestData);
+
+	BulkPixelConversion(src, dst);
+}
+
+void ElementUtil::BulkPixelConversion(const PixelBox &src, const PixelBox &dst)
+{
+	assert(src.getWidth() == dst.getWidth() && src.getHeight() == dst.getHeight() && src.getDepth() == dst.getDepth());
+
+	// Check for compressed formats, we don't support decompression, compression or recoding
+	if (ELEMENT_IS_COMPRESSED(src.format) || ELEMENT_IS_COMPRESSED(dst.format))
+	{
+		if (src.format == dst.format)
+		{
+			memcpy(dst.data, src.data, src.getConsecutiveSize());
+			return;
+		}
+		else
+		{
+			printf("This method can not be used to compress or decompress images\n");
+			return;
+		}
+	}
+
+	// The easy case
+	if (src.format == dst.format)
+	{
+		// Everything consecutive?
+		if (src.isConsecutive() && dst.isConsecutive())
+		{
+			memcpy(dst.data, src.data, src.getConsecutiveSize());
+			return;
+		}
+
+		const uint32 srcPixelSize = ELEMENT_SIZE(src.format);
+		const uint32 dstPixelSize = ELEMENT_SIZE(dst.format);
+		uint8 *srcptr = static_cast<uint8*>(src.data) + (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize;
+		uint8 *dstptr = static_cast<uint8*>(dst.data) + (dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize;
+
+		// Calculate pitches+skips in bytes
+		const uint32 srcRowPitchBytes = src.rowPitch*srcPixelSize;
+		//const uint srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
+		const uint32 srcSliceSkipBytes = src.getSliceSkip()*srcPixelSize;
+
+		const uint32 dstRowPitchBytes = dst.rowPitch*dstPixelSize;
+		//const uint dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
+		const uint32 dstSliceSkipBytes = dst.getSliceSkip()*dstPixelSize;
+
+		// Otherwise, copy per row
+		const uint32 rowSize = src.getWidth() * srcPixelSize;
+		for (uint32 z = src.front; z < src.back; ++z)
+		{
+			for (uint32 y = src.top; y < src.bottom; ++y)
+			{
+				memcpy(dstptr, srcptr, rowSize);
+				srcptr += srcRowPitchBytes;
+				dstptr += dstRowPitchBytes;
+			}
+
+			srcptr += srcSliceSkipBytes;
+			dstptr += dstSliceSkipBytes;
+		}
+
+		return;
+	}
+
+	// Is there a specialized, inlined, conversion?
+	if (DoOptimizedConversion(src, dst))
+	{
+		// If so, good
+		return;
+	}
+
+	const uint32 srcPixelSize = ELEMENT_SIZE(src.format);
+	const uint32 dstPixelSize = ELEMENT_SIZE(dst.format);
+	uint8 *srcptr = static_cast<uint8*>(src.data) + (src.left + src.top * src.rowPitch + src.front * src.slicePitch) * srcPixelSize;
+	uint8 *dstptr = static_cast<uint8*>(dst.data) + (dst.left + dst.top * dst.rowPitch + dst.front * dst.slicePitch) * dstPixelSize;
+
+	// Calculate pitches+skips in bytes
+	const uint32 srcRowSkipBytes = src.getRowSkip()*srcPixelSize;
+	const uint32 srcSliceSkipBytes = src.getSliceSkip()*srcPixelSize;
+	const uint32 dstRowSkipBytes = dst.getRowSkip()*dstPixelSize;
+	const uint32 dstSliceSkipBytes = dst.getSliceSkip()*dstPixelSize;
+
+	// The brute force fallback
+	float r = 0, g = 0, b = 0, a = 1;
+	for (uint32 z = src.front; z < src.back; ++z)
+	{
+		for (uint32 y = src.top; y < src.bottom; ++y)
+		{
+			for (uint32 x = src.left; x < src.right; ++x)
+			{
+				UnpackColor(r, g, b, a, src.format, srcptr);
+				PackColor(r, g, b, a, dst.format, dstptr);
+				srcptr += srcPixelSize;
+				dstptr += dstPixelSize;
+			}
+			srcptr += srcRowSkipBytes;
+			dstptr += dstRowSkipBytes;
+		}
+		srcptr += srcSliceSkipBytes;
+		dstptr += dstSliceSkipBytes;
 	}
 }
 

@@ -62,6 +62,8 @@ public:
 	bool						saveToFile(const std::string &filename, ImageFormat imgFmt = IF_UNKNOWN);
 	void						destroy();
 
+	PixelBox					getPixelBox(uint32 face = 0, uint32 mipmap = 0) const;
+
 	inline bool					hasFlag(ImageFlags imgFlag) const { return ((m_flags & imgFlag) != 0); }
 	inline uint32				getFlags() const { return m_flags; }
 	inline ElementFormat		getElementFormat() const { return m_format; }
@@ -86,9 +88,21 @@ public:
 	* is only valid for cubemap and volume textures. This uses the first (largest) mipmap.
 	*/
 	Color						getColor(int x, int y, int z = 0) const;
+
+	// Resize a 2D image, applying the appropriate filter.
+	bool						scale(uint32 width, uint32 height, ImageFilter filter = IMGFILTER_BILINEAR);
 	
 	// Static function to calculate size in bytes from the number of mipmaps, faces and the dimensions
 	static uint32				calculateSize(uint32 mipmaps, uint32 faces, uint32 width, uint32 height, uint32 depth, ElementFormat format);
+
+	/** Scale a 1D, 2D or 3D image volume.
+	@param 	src			PixelBox containing the source pointer, dimensions and format
+	@param 	dst			PixelBox containing the destination pointer, dimensions and format
+	@param 	filter		Which filter to use
+	@remarks 	This function can do pixel format conversion in the process.
+	@note	dst and src can point to the same PixelBox object without any problem
+	*/
+	static bool					Scale(const PixelBox &src, const PixelBox &dst, ImageFilter filter = IMGFILTER_BILINEAR);
 
 private:
 	ElementFormat		m_format;			// The pixel format of the image

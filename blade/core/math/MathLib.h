@@ -15,6 +15,22 @@ namespace Math
 	extern BLADE_CORE_API const float PI_DIV8;			//!< Math::PI / 8.0
 	extern BLADE_CORE_API const float PI_DIV180;		//!< 180 / Math::PI
 	extern BLADE_CORE_API const float MAX_FLOAT;		//!< 3.402823466e+38F
+	extern BLADE_CORE_API const int8 MIN_I8;				//!< -128
+	extern BLADE_CORE_API const int8 MAX_I8;				//!< 127
+	extern BLADE_CORE_API const uint8 MIN_UI8;				//!< 0
+	extern BLADE_CORE_API const uint8 MAX_UI8;				//!< 0xff
+	extern BLADE_CORE_API const int16 MIN_I16;				//!< -32768
+	extern BLADE_CORE_API const int16 MAX_I16;				//!< 32767
+	extern BLADE_CORE_API const uint16 MIN_UI16;			//!< 0
+	extern BLADE_CORE_API const uint16 MAX_UI16;			//!< 0xffff
+	extern BLADE_CORE_API const int32 MIN_I32;				//!< -2147483648
+	extern BLADE_CORE_API const int32 MAX_I32;				//!< 2147483647
+	extern BLADE_CORE_API const uint32 MIN_UI32;			//!< 0
+	extern BLADE_CORE_API const uint32 MAX_UI32;			//!< 0xffffffff
+	extern BLADE_CORE_API const int64 MIN_I64;				//!< -9223372036854775808
+	extern BLADE_CORE_API const int64 MAX_I64;				//!< 9223372036854775807
+	extern BLADE_CORE_API const uint64 MIN_UI64;			//!< 0
+	extern BLADE_CORE_API const uint64 MAX_UI64;			//!< 0xffffffffffffffff
 
 	template <typename T>
 	inline bool IsEqual(T lhs, T rhs)

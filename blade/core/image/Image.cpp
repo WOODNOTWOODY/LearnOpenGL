@@ -2,6 +2,7 @@
 #include "Image.h"
 #include "STBImageCodec.h"
 #include "util/PathUtil.h"
+#include "util/PixelSampler.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -148,6 +149,58 @@ void Image::destroy()
 	m_size = 0;
 }
 
+PixelBox Image::getPixelBox(uint32 face, uint32 mipmap) const
+{
+	// Image data is arranged as:
+	// face 0, top level (mip 0)
+	// face 0, mip 1
+	// face 0, mip 2
+	// face 1, top level (mip 0)
+	// face 1, mip 1
+	// face 1, mip 2
+	// etc
+	assert(mipmap <= m_numMipmaps, "Mipmap index is out of range.");
+	assert(face < getNumFaces(), "Face index is out of range.");
+
+	// Calculate mipmap offset and size
+	uint8 *offset = const_cast<uint8*>(m_data);
+
+	// Base offset is number of full faces
+	uint32 width = m_width, height = m_height, depth = m_depth;
+
+	// Figure out the offsets 
+	uint32 fullFaceSize = 0;
+	uint32 finalFaceSize = 0;
+	uint32 finalWidth = 0, finalHeight = 0, finalDepth = 0;
+
+	for (uint32 mip = 0; mip <= m_numMipmaps; ++mip)
+	{
+		if (mip == mipmap)
+		{
+			finalFaceSize = fullFaceSize;
+			finalWidth = width;
+			finalHeight = height;
+			finalDepth = depth;
+			break;
+		}
+
+		fullFaceSize += ElementUtil::GetMemorySize(width, height, depth, m_format);
+
+		/// Half size in each dimension
+		if (width != 1) width /= 2;
+		if (height != 1) height /= 2;
+		if (depth != 1) depth /= 2;
+	}
+
+	// Advance pointer by number of full faces, plus mip offset into
+	offset += face * fullFaceSize;
+	offset += finalFaceSize;
+	// Return subsurface as pixelbox
+	PixelBox src(finalWidth, finalHeight, finalDepth, m_format, offset);
+
+	return src;
+}
+
 std::string Image::getImageFormatExt(ImageFormat imgFmt)
 {
 	switch(imgFmt)
@@ -196,6 +249,154 @@ uint32 Image::calculateSize(uint32 mipmaps, uint32 faces, uint32 width, uint32 h
 	}
 
 	return size;
+}
+
+bool Image::scale(uint32 width, uint32 height, ImageFilter filter)
+{
+	// scale dynamic images is not supported
+	assert(m_depth == 1);
+
+	// reassign buffer to temp image, make sure auto-delete is true
+	Image tempImg(m_data, m_width, m_height, 1, m_format);
+
+	// do not delete[] m_pBuffer!  temp will destroy it
+
+	// set new dimensions, allocate new buffer
+	m_width = width;
+	m_height = height;
+	m_size = ElementUtil::GetMemorySize(m_width, m_height, 1, m_format);
+	m_data = (Byte*)BLADE_MALLOC(m_size);
+	m_numMipmaps = 0; // Loses precomputed mipmaps
+
+	// scale the image from temp into our resized buffer
+	if (!Image::Scale(tempImg.getPixelBox(), getPixelBox(), filter))
+		return false;
+
+	return true;
+}
+
+bool Image::Scale(const PixelBox &src, const PixelBox &dst, ImageFilter filter)
+{
+	assert(!ELEMENT_IS_COMPRESSED(src.format));
+	assert(!ELEMENT_IS_COMPRESSED(dst.format));
+
+	Buffer buf; // For auto-delete
+	PixelBox temp;
+	switch (filter)
+	{
+	default:
+	case IMGFILTER_NEAREST:
+	{
+		if (src.format == dst.format)
+		{
+			// No intermediate buffer needed
+			temp = dst;
+		}
+		else
+		{
+			// Allocate temporary buffer of destination size in source format 
+			temp = PixelBox(dst.getWidth(), dst.getHeight(), dst.getDepth(), src.format);
+			buf.allocate(temp.getConsecutiveSize());
+			temp.data = buf.data();
+		}
+		// super-optimized: no conversion
+		switch (ELEMENT_SIZE(src.format))
+		{
+		case 1: NearestSampler<1>::Scale(src, temp); break;
+		case 2: NearestSampler<2>::Scale(src, temp); break;
+		case 3: NearestSampler<3>::Scale(src, temp); break;
+		case 4: NearestSampler<4>::Scale(src, temp); break;
+		case 6: NearestSampler<6>::Scale(src, temp); break;
+		case 8: NearestSampler<8>::Scale(src, temp); break;
+		case 12: NearestSampler<12>::Scale(src, temp); break;
+		case 16: NearestSampler<16>::Scale(src, temp); break;
+		default:
+		{
+			// never reached
+			assert(false);
+			return false;
+		}
+		}
+
+		if (temp.data != dst.data)
+		{
+			// Blit temp buffer
+			ElementUtil::BulkPixelConversion(temp, dst);
+		}
+	} break;
+	case IMGFILTER_LINEAR:
+	case IMGFILTER_BILINEAR:
+	{
+		switch (src.format)
+		{
+		case EF_R8:
+		case EF_R8_SNORM:
+		case EF_R8_UINT:
+		case EF_R8_SINT:
+		case EF_RGB8:
+		case EF_RGB8_SNORM:
+		case EF_RGB8_UINT:
+		case EF_RGB8_SINT:
+		case EF_BGR8:
+		case EF_RGBA8:
+		case EF_RGBA8_SNORM:
+		case EF_RGBA8_UINT:
+		case EF_RGBA8_SINT:
+		case EF_BGRA8:
+		{
+			if (src.format == dst.format)
+			{
+				// No intermediate buffer needed
+				temp = dst;
+			}
+			else
+			{
+				// Allocate temp buffer of destination size in source format 
+				temp = PixelBox(dst.getWidth(), dst.getHeight(), dst.getDepth(), src.format);
+				buf.allocate(temp.getConsecutiveSize());
+				temp.data = buf.data();
+			}
+			// super-optimized: byte-oriented math, no conversion
+			switch (ELEMENT_SIZE(src.format))
+			{
+			case 1: LinearSamplerByte<1>::Scale(src, temp); break;
+			case 2: LinearSamplerByte<2>::Scale(src, temp); break;
+			case 3: LinearSamplerByte<3>::Scale(src, temp); break;
+			case 4: LinearSamplerByte<4>::Scale(src, temp); break;
+			default:
+			{
+				// never reached
+				assert(false);
+				return false;
+			}
+			}
+			if (temp.data != dst.data)
+			{
+				// Blit temp buffer
+				ElementUtil::BulkPixelConversion(temp, dst);
+			}
+		} break;
+		case EF_RGB32_FLOAT:
+		case EF_RGBA32_FLOAT:
+		{
+			if (dst.format == EF_RGB32_FLOAT || dst.format == EF_RGBA32_FLOAT)
+			{
+				// float32 to float32, avoid unpack/repack overhead
+				LinearSamplerFloat32::Scale(src, dst);
+				break;
+			}
+		}
+			// else, fall through
+		default:
+		{
+			// non-optimized: floating-point math, performs conversion but always works
+			LinearSampler::Scale(src, dst);
+		} break;
+		} // switch
+	} break;
+	}
+
+	return true;
 }
 
 BLADE_NAMESPACE_END
