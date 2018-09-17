@@ -88,6 +88,7 @@ public:
 	* is only valid for cubemap and volume textures. This uses the first (largest) mipmap.
 	*/
 	Color						getColor(int x, int y, int z = 0) const;
+	void						setColor(Color const &cv, int x, int y, int z = 0);
 
 	// Resize a 2D image, applying the appropriate filter.
 	bool						scale(uint32 width, uint32 height, ImageFilter filter = IMGFILTER_BILINEAR);

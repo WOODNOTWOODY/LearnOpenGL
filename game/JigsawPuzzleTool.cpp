@@ -12,6 +12,7 @@ USING_NAMESPACE_BLADE;
 std::map<uint32, uint32> charId2NumMap;
 std::map<uint32, std::map<uint32, Vec4i>> charId2PieceOffsetMap;
 std::map<uint32, std::vector<std::pair<uint32, Vec4i>>> charId2PieceOrder;
+std::map<uint32, std::map<uint32, std::pair<float, float>>> charId2PieceScale;
 
 static int cmp(const void *a, const void *b)
 {
@@ -87,6 +88,9 @@ static void thread_task(ThreadTask* task)
 
 				std::map<uint32, Vec4i> pieceId2Offset;
 				charId2PieceOffsetMap[charId] = pieceId2Offset;
+
+				std::map<uint32, std::pair<float, float>> pieceId2Scale;
+				charId2PieceScale[charId] = pieceId2Scale;
 			}
 			task->mutex.unlock();
 
@@ -96,6 +100,16 @@ static void thread_task(ThreadTask* task)
 			PathUtil::getFileData(buff2, tempPath);
 			ImageFormat imgFmt = Image::getImageFormat(tempPath);
 			Image *pImage = Image::createFromMemory(buff2, imgFmt, false);
+			/*for (int i = 0; i < pImage->getWidth(); ++i)
+			{
+				for (int j = 0; j < pImage->getHeight(); ++j)
+				{
+					Color c = pImage->getColor(i, j);
+					float gray = 0.2989 * c.r + 0.5870 * c.g + 0.1140 * c.b;
+					pImage->setColor(Color(gray, gray, gray, 1.0f), i, j);
+				}
+			}
+			pImage->saveToFile("gray.png", IF_PNG);*/
 
 			Buffer buff3;
 			sprintf(tempPath, "%sw%u_%u_b.png", dirName.c_str(), charId, pieceId);
@@ -104,11 +118,27 @@ static void thread_task(ThreadTask* task)
 
 			float scaleWidth = (float)pImage->getWidth() / (float)pBackgroundImage->getWidth();
 			float scaleHeight = (float)pImage->getHeight() / (float)pBackgroundImage->getHeight();
+			task->mutex.lock();
+			charId2PieceScale[charId][pieceId] = std::make_pair(scaleWidth, scaleHeight);
+			task->mutex.unlock();
 			
 			Buffer buff1;
 			PathUtil::getFileData(buff1, file);
 			Image *pTemplateImage = Image::createFromMemory(buff1, imgFmt, false);
 			pTemplateImage->scale(pTemplateImage->getWidth() * scaleWidth, pTemplateImage->getHeight() * scaleHeight, IMGFILTER_BILINEAR);
+			/*for (int i = 0; i < pTemplateImage->getWidth(); ++i)
+			{
+				for (int j = 0; j < pTemplateImage->getHeight(); ++j)
+				{
+					Color c = pTemplateImage->getColor(i, j);
+					if (Math::IsNotEqual(c.r, 0.0f) || Math::IsNotEqual(c.g, 0.0f) || Math::IsNotEqual(c.b, 0.0f))
+					{
+						float gray = 0.2989 * c.r + 0.5870 * c.g + 0.1140 * c.b;
+						pTemplateImage->setColor(Color(gray, gray, gray, 1.0f), i, j);
+					}
+				}
+			}
+			pTemplateImage->saveToFile("gray_template.png", IF_PNG);*/
 
 			float minMatchDegree = Math::MAX_FLOAT;
 			Vec4i box(0, 0, 0, 0);
@@ -165,9 +195,12 @@ static void thread_task(ThreadTask* task)
 						{
 							Color c1 = pImage->getColor(i + m, j + n);
 							Color c2 = pTemplateImage->getColor(m, n);
-							float gray1 = 0.2989 * c1.r + 0.5870 * c1.g + 0.1140 * c1.b;
-							float gray2 = 0.2989 * c2.r + 0.5870 * c2.g + 0.1140 * c2.b;
-							matchDegree += abs(gray1 - gray2);
+							if (Math::IsNotEqual(c2.r, 0.0f) || Math::IsNotEqual(c2.g, 0.0f) || Math::IsNotEqual(c2.b, 0.0f))
+							{
+								float gray1 = 0.2989 * c1.r + 0.5870 * c1.g + 0.1140 * c1.b;
+								float gray2 = 0.2989 * c2.r + 0.5870 * c2.g + 0.1140 * c2.b;
+								matchDegree += abs(gray1 - gray2);
+							}
 						}
 					}
 
@@ -188,6 +221,7 @@ static void thread_task(ThreadTask* task)
 
 			pImage->destroy();
 			pTemplateImage->destroy();
+			pBackgroundImage->destroy();
 
 			printf("end task:%s\n", file.c_str());
 		}
@@ -263,10 +297,12 @@ int main(int argc, char *argv[])
 		sprintf(temp, "\t[%u] = {", it1->first);
 		tempStr = temp;
 		saveBuff.write(tempStr.c_str(), tempStr.size());
+		std::map<uint32, std::pair<float, float>> pieceId2Scale = charId2PieceScale[it1->first];
 		for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2)
 		{
-			int32 x = 2 * it2->second.x - 1;
-			int32 y = 2 * it2->second.y - 1;
+			std::pair<float, float> ps = pieceId2Scale[it2->first];
+			int32 x = it2->second.x / ps.first;
+			int32 y = it2->second.y / ps.second;
 			if (x < 0) x = 0;
 			if (y < 0) y = 0;
 			sprintf(temp, "[%u] = {%u, %u}, ", it2->first, x, y);

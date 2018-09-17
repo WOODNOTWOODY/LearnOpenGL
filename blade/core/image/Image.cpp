@@ -237,6 +237,11 @@ Color Image::getColor(int x, int y, int z) const
 	return rval;
 }
 
+void Image::setColor(Color const &cv, int x, int y, int z)
+{
+	ElementUtil::PackColor(cv, m_format, &m_data[m_pixelSize * (z * m_width * m_height + m_width * y + x)]);
+}
+
 uint32 Image::calculateSize(uint32 mipmaps, uint32 faces, uint32 width, uint32 height, uint32 depth, ElementFormat format)
 {
 	uint32 size = 0;
