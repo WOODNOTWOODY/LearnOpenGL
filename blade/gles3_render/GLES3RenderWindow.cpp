@@ -1,5 +1,6 @@
 #include "GLES3RenderStd.h"
 #include "GLES3RenderWindow.h"
+#include "GLES3RenderEngine.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -15,7 +16,7 @@ RenderWindow::RenderWindow()
 
 RenderWindow::~RenderWindow()
 {
-
+	BLADE_SAFE_DELETE(m_pContext);
 }
 
 bool RenderWindow::initialize(const WindowSetting& setting)
@@ -41,7 +42,12 @@ bool RenderWindow::initialize(const WindowSetting& setting)
 	}
 
 	// glfw settings
-	glfwMakeContextCurrent(m_glfwWindow);
+	m_pContext = BLADE_NEW(RenderContext(this));
+
+	ContextOption op;
+	m_pContext->initialize(op);
+
+	m_pContext->bind();
 
 	// initialize glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -50,16 +56,18 @@ bool RenderWindow::initialize(const WindowSetting& setting)
 		return false;
 	}
 
-	glEnable(GL_DEPTH_TEST);
-
 	glViewport(0, 0, m_width, m_height);
+
+	DepthStencilState* pDefaultDSS = RenderEngine::Instance()->getDefaultDepthStencilState();
+	pDefaultDSS->bind(true);
+	m_pContext->setDepthStencilState(pDefaultDSS);
 
 	return true;
 }
 
 void RenderWindow::destroy()
 {
-	glfwMakeContextCurrent(NULL);
+	m_pContext->destroy();
 	glfwTerminate();
 }
 

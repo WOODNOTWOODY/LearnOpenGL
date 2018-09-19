@@ -22,6 +22,8 @@ public:
 	static GLenum           mapInternalFormat(ElementFormat format);
 	static GLint            mapAddressMode(AddressMode mode);
 	static void             mapTextureFilter(GLenum& glMin, GLenum& glMag, FilterOption min, FilterOption mag, FilterOption mip);
+	static GLenum           mapComparisonFunc(ComparisonFunc func);
+	static GLenum           mapStencilOperation(StencilOperation op);
 };
 
 BLADE_NAMESPACE_END

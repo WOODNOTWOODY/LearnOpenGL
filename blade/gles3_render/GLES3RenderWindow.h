@@ -2,6 +2,7 @@
 #define __BLADE_GLES3RENDERWINDOW_H__
 
 #include "camera/Camera.h"
+#include "GLES3RenderContext.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -41,6 +42,7 @@ public:
 	inline uint32					getTop() const { return m_top; }
 	inline uint32					getWidth() const { return m_width; }
 	inline uint32					getHeight() const { return m_height; }
+	inline RenderContext*		    getContext() const { return m_pContext; }
 	inline GLFWwindow*              getGLFWWindow() const { return m_glfwWindow; }
 
 private:
@@ -49,6 +51,7 @@ private:
 	uint32            m_top;
 	uint32            m_width;
 	uint32            m_height;
+	RenderContext*    m_pContext;
 
 	GLFWwindow*       m_glfwWindow;
 };

@@ -5,6 +5,7 @@
 #include "GLES3RenderWindow.h"
 #include "GLES3RenderLayout.h"
 #include "GLES3Texture.h"
+#include "GLES3RenderStateObject.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -39,7 +40,15 @@ public:
 	void                              bindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture);
 	void                              unbindGLTexture(TextureType type, GLenum glTarget, GLuint hTexture);
 
+	inline void                       setDepthStencilState(DepthStencilState* pState)
+	{
+		m_pCurrentDSS = pState;
+		m_curRenderWindow->getContext()->setDepthStencilState(m_pCurrentDSS);
+	}
+
 	inline RenderWindow*              getCurrentRenderWindow() const { return m_curRenderWindow; }
+	inline DepthStencilState*         getDefaultDepthStencilState() const { return m_pDefaultDSS; }
+	inline DepthStencilState*         getDepthStencilState() const { return m_pCurrentDSS; }
 	inline GLuint                     getCurrentProgramHandle() const { return m_curGLProgram; }
 	inline GLuint                     getCurrentVAOHandle() const { return m_curGLVAO; }
 	inline GLuint                     getActiveTextureUnit() const { return m_glActiveTexUnit; }
@@ -49,6 +58,9 @@ private:
 
 	RenderWindow*        m_curRenderWindow;
 	BindBufferMap        m_bindBufferMap;
+	DepthStencilState*   m_pDefaultDSS;
+	DepthStencilState*   m_pCurrentDSS;
+
 	GLuint               m_curGLProgram;
 	GLuint               m_curGLVAO;
 	GLuint				 m_texUnits[MAX_TEXTURE_UNIT_NUM][TT_COUNT];

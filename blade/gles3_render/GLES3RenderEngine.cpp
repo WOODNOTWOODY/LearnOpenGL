@@ -24,6 +24,9 @@ RenderEngine::~RenderEngine()
 
 bool RenderEngine::initialize(const WindowSetting& setting)
 {
+	m_pDefaultDSS = BLADE_NEW(DepthStencilState);
+	m_pCurrentDSS = m_pDefaultDSS;
+
 	m_curRenderWindow = BLADE_NEW(RenderWindow);
 	if (!m_curRenderWindow->initialize(setting))
 	{

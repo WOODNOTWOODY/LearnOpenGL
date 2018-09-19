@@ -471,5 +471,45 @@ void GLES3Mapping::mapTextureFilter(GLenum& glMin, GLenum& glMag, FilterOption m
 	}
 }
 
+GLenum GLES3Mapping::mapComparisonFunc(ComparisonFunc func)
+{
+	switch (func)
+	{
+	case CF_ALWAYS:        return GL_ALWAYS;
+	case CF_NEVER:         return GL_NEVER;
+	case CF_LESS:          return GL_LESS;
+	case CF_LESS_EQUAL:    return GL_LEQUAL;
+	case CF_EQUAL:         return GL_EQUAL;
+	case CF_NOT_EQUAL:     return GL_NOTEQUAL;
+	case CF_GREATER_EQUAL: return GL_GEQUAL;
+	case CF_GREATER:       return GL_GREATER;
+	default:
+		{
+			assert(false);
+			return GL_EQUAL;
+		}
+	}
+}
+
+GLenum GLES3Mapping::mapStencilOperation(StencilOperation op)
+{
+	switch (op)
+	{
+	case SOP_KEEP:        return GL_KEEP;
+	case SOP_ZERO:        return GL_ZERO;
+	case SOP_REPLACE:     return GL_REPLACE;
+	case SOP_INCR:        return GL_INCR;
+	case SOP_INCR_WRAP:   return GL_INCR_WRAP;
+	case SOP_DECR:        return GL_DECR;
+	case SOP_DECR_WRAP:   return GL_DECR_WRAP;
+	case SOP_INVERT:      return GL_INVERT;
+	default:
+		{
+			assert(false);
+			return GL_KEEP;
+		}
+	}
+}
+
 
 BLADE_NAMESPACE_END

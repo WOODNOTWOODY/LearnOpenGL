@@ -13,6 +13,7 @@ typedef unsigned int		uint32;
 typedef unsigned long long	uint64;
 
 typedef uint8			    Byte;
+typedef unsigned long       ulong;
 
 BLADE_NAMESPACE_END
 
