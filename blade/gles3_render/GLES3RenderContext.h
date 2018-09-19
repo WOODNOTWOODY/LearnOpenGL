@@ -30,6 +30,12 @@ public:
 	void                      setDepthStencilState(DepthStencilState* pState);
 	inline DepthStencilState* getDepthStencilState() const { return m_pCurrentDSS; }
 
+	void                      setRasterizerState(RasterizerState* pState);
+	inline RasterizerState*   getRasterizerState() const { return m_pCurrentRS; }
+
+	void                      setBlendState(BlendState* pState);
+	inline BlendState*        getBlendState() const { return m_pCurrentBS; }
+
 	inline RenderWindow*      getWindow() const { return m_pWindow; }
 	inline bool               isShared() const { return m_bShared; }
 	inline bool               isBackground() const { return m_bBackground; }
@@ -40,7 +46,9 @@ private:
 	bool               m_bShared;
 	bool               m_bBackground;
 	ulong              m_threadIdx;
+	RasterizerState*   m_pCurrentRS;
 	DepthStencilState* m_pCurrentDSS;
+	BlendState*        m_pCurrentBS;
 };
 
 BLADE_NAMESPACE_END

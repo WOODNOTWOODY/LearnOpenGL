@@ -26,6 +26,10 @@ bool RenderEngine::initialize(const WindowSetting& setting)
 {
 	m_pDefaultDSS = BLADE_NEW(DepthStencilState);
 	m_pCurrentDSS = m_pDefaultDSS;
+	m_pDefaultBS = BLADE_NEW(BlendState);
+	m_pCurrentBS = m_pDefaultBS;
+	m_pDefaultRS = BLADE_NEW(RasterizerState);
+	m_pCurrentRS = m_pDefaultRS;
 
 	m_curRenderWindow = BLADE_NEW(RenderWindow);
 	if (!m_curRenderWindow->initialize(setting))
@@ -169,6 +173,47 @@ void RenderEngine::unbindGLTexture(TextureType type, GLenum glTarget, GLuint hTe
 			glBindTexture(glTarget, 0);
 			handle = 0;
 		}
+	}
+}
+
+void RenderEngine::notifyBlendStateReleased(BlendState* pState)
+{
+	if (m_pCurrentBS == pState)
+	{
+		m_pCurrentBS = NULL;
+	}
+
+	RenderContext* pContext = m_curRenderWindow->getContext();
+	if (pState == pContext->getBlendState())
+	{
+		pContext->setBlendState(NULL);
+	}
+}
+
+void RenderEngine::notifyRasterizerStateReleased(RasterizerState* pState)
+{
+	if (m_pCurrentRS == pState)
+	{
+		m_pCurrentRS = NULL;
+	}
+
+	RenderContext* pContext = m_curRenderWindow->getContext();
+	if (pState == pContext->getRasterizerState())
+	{
+		pContext->setRasterizerState(NULL);
+	}
+}
+void RenderEngine::notifyDepthStencilStateReleased(DepthStencilState* pState)
+{
+	if (m_pCurrentDSS == pState)
+	{
+		m_pCurrentDSS = NULL;
+	}
+
+	RenderContext* pContext = m_curRenderWindow->getContext();
+	if (pState == pContext->getDepthStencilState())
+	{
+		pContext->setDepthStencilState(NULL);
 	}
 }
 

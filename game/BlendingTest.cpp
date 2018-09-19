@@ -45,43 +45,7 @@
 //static void initDSSMap()
 //{
 //	DepthStencilStateDesc dssDesc;
-//	dssDesc.bDepth = true;
-//	dssDesc.depthFunc = CF_LESS;
-//	dssDesc.bFrontStencil = true;
-//	dssDesc.frontStencilFunc = CF_NOT_EQUAL;
-//	dssDesc.frontStencilWriteMask = 0xff;
-//	dssDesc.frontStencilReadMask = 0xff;
-//	dssDesc.frontStencilRef = 1;
-//	dssDesc.frontStencilFailOp = SOP_KEEP;
-//	dssDesc.frontStencilDepthFailOp = SOP_KEEP;
-//	dssDesc.frontStencilPassOp = SOP_REPLACE;
-//	dssDesc.bBackStencil = true;
-//	dssDesc.backStencilFunc = CF_NOT_EQUAL;
-//	dssDesc.backStencilWriteMask = 0xff;
-//	dssDesc.backStencilReadMask = 0xff;
-//	dssDesc.backStencilRef = 1;
-//	dssDesc.backStencilFailOp = SOP_KEEP;
-//	dssDesc.backStencilDepthFailOp = SOP_KEEP;
-//	dssDesc.backStencilPassOp = SOP_REPLACE;
-//
 //	gDSSMap["default"] = BLADE_NEW(DepthStencilState(dssDesc));
-//
-//	dssDesc.frontStencilWriteMask = 0x00;
-//	dssDesc.backStencilWriteMask = 0x00;
-//	gDSSMap["plane"] = BLADE_NEW(DepthStencilState(dssDesc));
-//
-//	dssDesc.frontStencilFunc = CF_ALWAYS;
-//	dssDesc.frontStencilWriteMask = 0xff;
-//	dssDesc.backStencilFunc = CF_ALWAYS;
-//	dssDesc.backStencilWriteMask = 0xff;
-//	gDSSMap["cube"] = BLADE_NEW(DepthStencilState(dssDesc));
-//
-//	dssDesc.frontStencilFunc = CF_NOT_EQUAL;
-//	dssDesc.frontStencilWriteMask = 0x00;
-//	dssDesc.backStencilFunc = CF_NOT_EQUAL;
-//	dssDesc.backStencilWriteMask = 0x00;
-//	dssDesc.bDepth = false;
-//	gDSSMap["single"] = BLADE_NEW(DepthStencilState(dssDesc));
 //}
 //
 //int main(int argc, char *argv[])
@@ -130,17 +94,25 @@
 //	Texture* pTexture2 = BLADE_NEW(Texture(TT_2D, pImage->getElementFormat(), 0, pImage->getWidth(),
 //		pImage->getHeight(), pImage->getDepth(), 1, samplerDesc, buffForImagea));
 //
+//	Buffer buffb, buffForImageb;
+//	PathUtil::getFileData(buffb, "../../resource/grass.png");
+//	imgFmt = Image::getImageFormat("grass.png");
+//	pImage = Image::createFromMemory(buffb, imgFmt, false);
+//	buffForImageb.attach(pImage->getSize(), pImage->getData());
+//	samplerDesc.addrModeU = AM_CLAMP;
+//	samplerDesc.addrModeV = AM_CLAMP;
+//	Texture* pTexture3 = BLADE_NEW(Texture(TT_2D, pImage->getElementFormat(), 0, pImage->getWidth(),
+//		pImage->getHeight(), pImage->getDepth(), 1, samplerDesc, buffForImageb));
+//
 //	// load shaders
 //	using namespace Blade;
 //	Buffer buff1, buff2, buff3;
-//	PathUtil::getFileData(buff1, "../../resource/stencil_testing.vs", true);
-//	PathUtil::getFileData(buff2, "../../resource/stencil_testing.fs", true);
-//	PathUtil::getFileData(buff3, "../../resource/stencil_single_color.fs", true);
+//	PathUtil::getFileData(buff1, "../../resource/blending_testing.vs", true);
+//	PathUtil::getFileData(buff2, "../../resource/blending_testing.fs", true);
 //
 //	std::vector<Blade::Shader*> shaders;
-//	Shader* shader1 = BLADE_NEW(Shader("stencil_testing.vs", ST_VERTEX_SHADER, buff1));
-//	Shader* shader2 = BLADE_NEW(Shader("stencil_testing.fs", ST_FRAGMENT_SHADER, buff2));
-//	Shader* shader3 = BLADE_NEW(Shader("stencil_single_color.fs", ST_FRAGMENT_SHADER, buff3));
+//	Shader* shader1 = BLADE_NEW(Shader("blending_testing.vs", ST_VERTEX_SHADER, buff1));
+//	Shader* shader2 = BLADE_NEW(Shader("blending_testing.fs", ST_FRAGMENT_SHADER, buff2));
 //	shaders.push_back(shader1);
 //	shaders.push_back(shader2);
 //
@@ -149,16 +121,8 @@
 //	program->prepareLink();
 //	program->compileAndLinkShaders();
 //	program->parseParams();
-//
-//	shaders[1] = shader3;
-//	ShaderProgram* singleProgram = BLADE_NEW(ShaderProgram);
-//	singleProgram->setShaders(shaders);
-//	singleProgram->prepareLink();
-//	singleProgram->compileAndLinkShaders();
-//	singleProgram->parseParams();
 //	shader1->release();
 //	shader2->release();
-//	shader3->release();
 //
 //	// vertex data
 //	float cubeVertices[] = {
@@ -218,6 +182,17 @@
 //		5.0f, -0.5f, -5.0f, 2.0f, 2.0f
 //	};
 //
+//	float transparentVertices[] = {
+//		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+//		0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+//		0.0f, -0.5f, 0.0f, 0.0f, 1.0f,
+//		1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+//
+//		0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
+//		1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+//		1.0f, 0.5f, 0.0f, 1.0f, 0.0f
+//	};
+//
 //	VertexElementList vertElms;
 //	vertElms.resize(2);
 //	VertexElement &elm0 = vertElms[0];
@@ -247,12 +222,6 @@
 //	cubeLayout->setVertexBuffer(0, vbo);
 //	cubeLayout->bindGPUBuffers();
 //
-//	RenderLayout* singleCubeLayout = BLADE_NEW(RenderLayout);
-//	singleCubeLayout->initialize(vertElms, singleProgram);
-//	singleCubeLayout->setVertexCount(36);
-//	singleCubeLayout->setVertexBuffer(0, vbo);
-//	singleCubeLayout->bindGPUBuffers();
-//
 //	VertexElementList vertElmsForPlane;
 //	vertElmsForPlane.resize(2);
 //	VertexElement &elm2 = vertElmsForPlane[0];
@@ -281,6 +250,45 @@
 //	planeLayout->setVertexBuffer(0, vbo2);
 //	planeLayout->bindGPUBuffers();
 //
+//	VertexElementList vertElmsForTransparent;
+//	vertElmsForTransparent.resize(2);
+//	VertexElement &elm4 = vertElmsForTransparent[0];
+//	elm4.name = "iPosition";
+//	elm4.format = EF_RGB32_FLOAT;
+//	elm4.bNormalized = true;
+//
+//	VertexElement& elm5 = vertElmsForTransparent[1];
+//	elm5.name = "iTexCoord";
+//	elm5.format = EF_RG32_FLOAT;
+//	elm5.bNormalized = true;
+//	elm5.offset = ELEMENT_SIZE(EF_RGB32_FLOAT);
+//
+//	desc.stride = 5 * sizeof(float);
+//	desc.type = GBT_VERTEX;
+//	desc.size = sizeof(transparentVertices);
+//	desc.usage = GBU_STATIC_DRAW;
+//	desc.buffer = transparentVertices;
+//	desc.bBak = false;
+//	GPUBuffer* vbo3 = BLADE_NEW(GPUBuffer);
+//	vbo3->initialize(desc);
+//
+//	RenderLayout* tsLayout = BLADE_NEW(RenderLayout);
+//	tsLayout->initialize(vertElmsForTransparent, program);
+//	tsLayout->setVertexCount(6);
+//	tsLayout->setVertexBuffer(0, vbo3);
+//	tsLayout->bindGPUBuffers();
+//
+//	// transparent vegetation locations
+//	// --------------------------------
+//	Vec3 vegetation[] = 
+//	{
+//		Vec3(-1.5f, 0.0f, -0.48f),
+//		Vec3(1.5f, 0.0f, 0.51f),
+//		Vec3(0.0f, 0.0f, 0.7f),
+//		Vec3(-0.3f, 0.0f, -2.3f),
+//		Vec3(0.5f, 0.0f, -0.6f)
+//	};
+//
 //	// render loop
 //	float deltaTime = 0;
 //	float lastFrame = (float)(timerGetMilliseconds() * 0.001);
@@ -300,8 +308,6 @@
 //		renderEngine->clearGLColor(0.1f, 0.1f, 0.1f, 1.0f);
 //		renderEngine->clear(CM_COLOR | CM_DEPTH | CM_STENCIL);
 //
-//		renderEngine->setDepthStencilState(gDSSMap["plane"]);
-//
 //		planeLayout->getProgram()->bind();
 //
 //		Uniform* um;
@@ -320,54 +326,37 @@
 //		planeLayout->getProgram()->bindUniforms();
 //		renderEngine->render(planeLayout);
 //
-//		renderEngine->setDepthStencilState(gDSSMap["cube"]);
-//
 //		cubeLayout->getProgram()->bind();
 //		um = cubeLayout->getProgram()->getUniform("iTex");
 //		cubeLayout->getProgram()->bindTexture(um->getGLLocation(), pTexture);
-//
 //		um = cubeLayout->getProgram()->getUniform("iCamera");
 //		um->setData(vpm.ptr(), 16 * sizeof(float));
-//
 //		model.makeTranslate(Vec3(-1.0f, 0.0f, -1.0f));
 //		um = cubeLayout->getProgram()->getUniform("iModel");
 //		um->setData(model.ptr(), 16 * sizeof(float));
-//
 //		cubeLayout->getProgram()->bindUniforms();
 //		renderEngine->render(cubeLayout);
 //
 //		model.makeTranslate(Vec3(2.0f, 0.0f, 0.0f));
 //		um = cubeLayout->getProgram()->getUniform("iModel");
 //		um->setData(model.ptr(), 16 * sizeof(float));
-//
 //		cubeLayout->getProgram()->bindUniforms();
 //		renderEngine->render(cubeLayout);
 //
-//		renderEngine->setDepthStencilState(gDSSMap["single"]);
-//
-//		singleCubeLayout->getProgram()->bind();
-//
-//		um = singleCubeLayout->getProgram()->getUniform("iCamera");
+//		tsLayout->getProgram()->bind();
+//		um = tsLayout->getProgram()->getUniform("iCamera");
 //		um->setData(vpm.ptr(), 16 * sizeof(float));
+//		um = tsLayout->getProgram()->getUniform("iTex");
+//		tsLayout->getProgram()->bindTexture(um->getGLLocation(), pTexture3);
+//		for (uint32 i = 0; i < sizeof(vegetation) / sizeof(vegetation[0]); ++i)
+//		{
+//			model.makeTranslate(vegetation[i]);
+//			um = tsLayout->getProgram()->getUniform("iModel");
+//			um->setData(model.ptr(), 16 * sizeof(float));
+//			tsLayout->getProgram()->bindUniforms();
+//			renderEngine->render(tsLayout);
+//		}
 //
-//		model.makeTranslate(Vec3(-1.0f, 0.0f, -1.0f));
-//		model.scale(Vec3(1.1f, 1.1f, 1.1f));
-//		um = singleCubeLayout->getProgram()->getUniform("iModel");
-//		um->setData(model.ptr(), 16 * sizeof(float));
-//
-//		singleCubeLayout->getProgram()->bindUniforms();
-//		renderEngine->render(singleCubeLayout);
-//
-//		model.makeTranslate(Vec3(2.0f, 0.0f, 0.0f));
-//		model.scale(Vec3(1.1f, 1.1f, 1.1f));
-//		um = singleCubeLayout->getProgram()->getUniform("iModel");
-//		um->setData(model.ptr(), 16 * sizeof(float));
-//
-//		singleCubeLayout->getProgram()->bindUniforms();
-//		renderEngine->render(singleCubeLayout);
-//
-//		renderEngine->setDepthStencilState(gDSSMap["default"]);
-//	
 //		// swap the buffers
 //		renderEngine->getCurrentRenderWindow()->swapBuffers();
 //	}
@@ -384,15 +373,15 @@
 //	BLADE_DELETE(pTexture2);
 //
 //	BLADE_DELETE(program);
-//	BLADE_DELETE(singleProgram);
 //	BLADE_DELETE(vbo);
 //	BLADE_DELETE(vbo2);
+//	BLADE_DELETE(vbo3);
 //
 //	cubeLayout->destroy();
 //	BLADE_DELETE(cubeLayout);
 //
-//	singleCubeLayout->destroy();
-//	BLADE_DELETE(singleCubeLayout);
+//	tsLayout->destroy();
+//	BLADE_DELETE(tsLayout);
 //
 //	planeLayout->destroy();
 //	BLADE_DELETE(planeLayout);

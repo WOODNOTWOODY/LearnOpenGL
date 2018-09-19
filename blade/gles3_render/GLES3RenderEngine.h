@@ -46,9 +46,29 @@ public:
 		m_curRenderWindow->getContext()->setDepthStencilState(m_pCurrentDSS);
 	}
 
+	inline void                       setRasterizerState(RasterizerState* pState)
+	{
+		m_pCurrentRS = pState;
+		m_curRenderWindow->getContext()->setRasterizerState(m_pCurrentRS);
+	}
+
+	inline void                       setBlendState(BlendState* pState)
+	{
+		m_pCurrentBS = pState;
+		m_curRenderWindow->getContext()->setBlendState(m_pCurrentBS);
+	}
+
+	void							  notifyRasterizerStateReleased(RasterizerState* pState);
+	void							  notifyDepthStencilStateReleased(DepthStencilState* pState);
+	void							  notifyBlendStateReleased(BlendState* pState);
+
 	inline RenderWindow*              getCurrentRenderWindow() const { return m_curRenderWindow; }
 	inline DepthStencilState*         getDefaultDepthStencilState() const { return m_pDefaultDSS; }
+	inline RasterizerState*           getDefaultRasterizerState() const { return m_pDefaultRS; }
+	inline BlendState*                getDefaultBlendState() const { return m_pDefaultBS; }
 	inline DepthStencilState*         getDepthStencilState() const { return m_pCurrentDSS; }
+	inline RasterizerState*           getRasterizerState() const { return m_pCurrentRS; }
+	inline BlendState*                getBlendState() const { return m_pCurrentBS; }
 	inline GLuint                     getCurrentProgramHandle() const { return m_curGLProgram; }
 	inline GLuint                     getCurrentVAOHandle() const { return m_curGLVAO; }
 	inline GLuint                     getActiveTextureUnit() const { return m_glActiveTexUnit; }
@@ -59,7 +79,11 @@ private:
 	RenderWindow*        m_curRenderWindow;
 	BindBufferMap        m_bindBufferMap;
 	DepthStencilState*   m_pDefaultDSS;
+	RasterizerState*     m_pDefaultRS;
+	BlendState*          m_pDefaultBS;
 	DepthStencilState*   m_pCurrentDSS;
+	RasterizerState*     m_pCurrentRS;
+	BlendState*          m_pCurrentBS;
 
 	GLuint               m_curGLProgram;
 	GLuint               m_curGLVAO;

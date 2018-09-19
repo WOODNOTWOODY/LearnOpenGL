@@ -7,7 +7,9 @@ BLADE_NAMESPACE_BEGIN
 RenderContext::RenderContext(RenderWindow* pWindow)
 	: m_pWindow(pWindow)
 	, m_threadIdx(0)
+	, m_pCurrentRS(NULL)
 	, m_pCurrentDSS(NULL)
+	, m_pCurrentBS(NULL)
 {
 
 }
@@ -47,6 +49,15 @@ bool RenderContext::restore()
 	return true;
 }
 
+void RenderContext::setRasterizerState(RasterizerState* pState)
+{
+	if (m_pCurrentRS != pState && pState)
+	{
+		pState->bind();
+	}
+	m_pCurrentRS = pState;
+}
+
 void RenderContext::setDepthStencilState(DepthStencilState* pState)
 {
 	if (m_pCurrentDSS != pState && pState)
@@ -54,6 +65,15 @@ void RenderContext::setDepthStencilState(DepthStencilState* pState)
 		pState->bind();
 	}
 	m_pCurrentDSS = pState;
+}
+
+void RenderContext::setBlendState(BlendState* pState)
+{
+	if (m_pCurrentBS != pState && pState)
+	{
+		pState->bind();
+	}
+	m_pCurrentBS = pState;
 }
 
 BLADE_NAMESPACE_END

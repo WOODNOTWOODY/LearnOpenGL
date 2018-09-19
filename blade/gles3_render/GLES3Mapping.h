@@ -24,6 +24,8 @@ public:
 	static void             mapTextureFilter(GLenum& glMin, GLenum& glMag, FilterOption min, FilterOption mag, FilterOption mip);
 	static GLenum           mapComparisonFunc(ComparisonFunc func);
 	static GLenum           mapStencilOperation(StencilOperation op);
+	static GLenum           mapBlendOperation(BlendOperation op);
+	static GLenum           mapBlendFactor(BlendFactor factor);
 };
 
 BLADE_NAMESPACE_END

@@ -6,6 +6,231 @@
 
 BLADE_NAMESPACE_BEGIN
 
+RasterizerState::RasterizerState()
+{
+	create();
+}
+
+RasterizerState::RasterizerState(const RasterizerStateDesc& desc)
+	: m_desc(desc)
+{
+	create();
+}
+
+RasterizerState::~RasterizerState()
+{
+	RenderEngine::Instance()->notifyRasterizerStateReleased(this);
+}
+
+void RasterizerState::create()
+{
+	m_glFrontFace = m_desc.bFrontFaceCCW ? GL_CCW : GL_CW;
+}
+
+void RasterizerState::bind(bool bForce)
+{
+	RenderContext* pContext = RenderEngine::Instance()->getCurrentRenderWindow()->getContext();
+	RasterizerState* pCurState = pContext->getRasterizerState();
+	if (pCurState && !bForce)
+	{
+		const RasterizerStateDesc& curDesc = pCurState->getDesc();
+		if (m_desc.bDiscard != curDesc.bDiscard)
+		{
+			if (m_desc.bDiscard)
+			{
+				glEnable(GL_RASTERIZER_DISCARD);
+			}
+			else
+			{
+				glDisable(GL_RASTERIZER_DISCARD);
+			}
+		}
+
+		if (m_desc.cullMode != curDesc.cullMode)
+		{
+			switch (m_desc.cullMode)
+			{
+			case CULL_NONE:
+				{
+					glDisable(GL_CULL_FACE);
+				} break;
+			case CULL_FRONT:
+				{
+					glEnable(GL_CULL_FACE);
+					glCullFace(GL_FRONT);
+				} break;
+			case CULL_BACK:
+				{
+					glEnable(GL_CULL_FACE);
+					glCullFace(GL_BACK);
+				} break;
+			default: break;
+			}
+		}
+
+		if (m_desc.bFrontFaceCCW != curDesc.bFrontFaceCCW)
+		{
+			glFrontFace(m_glFrontFace);
+		}
+
+		if ((m_desc.depthBiasFactor != curDesc.depthBiasFactor) ||
+			(m_desc.depthBias != curDesc.depthBias))
+		{
+			glPolygonOffset(m_desc.depthBiasFactor, m_desc.depthBias);
+		}
+	}
+	else
+	{
+		if (m_desc.bDiscard)
+		{
+			glEnable(GL_RASTERIZER_DISCARD);
+		}
+		else
+		{
+			glDisable(GL_RASTERIZER_DISCARD);
+		}
+
+		switch (m_desc.cullMode)
+		{
+			case CULL_NONE:
+			{
+				glDisable(GL_CULL_FACE);
+			} break;
+			case CULL_FRONT:
+			{
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_FRONT);
+			} break;
+			case CULL_BACK:
+			{
+				glEnable(GL_CULL_FACE);
+				glCullFace(GL_BACK);
+			} break;
+			default: break;
+		}
+
+		glFrontFace(m_glFrontFace);
+		glPolygonOffset(m_desc.depthBiasFactor, m_desc.depthBias);
+	}
+}
+
+BlendState::BlendState()
+{
+	create();
+}
+
+BlendState::BlendState(const BlendStateDesc& desc)
+	: m_desc(desc)
+{
+	create();
+}
+
+BlendState::~BlendState()
+{
+	RenderEngine::Instance()->notifyBlendStateReleased(this);
+}
+
+void BlendState::create()
+{
+	m_glBlendOp = GLES3Mapping::mapBlendOperation(m_desc.targets[0].blendOp);
+	m_glAlphaBlendOp = GLES3Mapping::mapBlendOperation(m_desc.targets[0].alphaBlendOp);
+	m_glSrcBlend = GLES3Mapping::mapBlendFactor(m_desc.targets[0].srcBlend);
+	m_glDstBlend = GLES3Mapping::mapBlendFactor(m_desc.targets[0].dstBlend);
+	m_glSrcAlphaBlend = GLES3Mapping::mapBlendFactor(m_desc.targets[0].srcAlphaBlend);
+	m_glDstAlphaBlend = GLES3Mapping::mapBlendFactor(m_desc.targets[0].dstAlphaBlend);
+	m_glRedMask = (m_desc.targets[0].colorWriteMask & CWM_R) != 0;
+	m_glGreenMask = (m_desc.targets[0].colorWriteMask & CWM_G) != 0;
+	m_glBlueMask = (m_desc.targets[0].colorWriteMask & CWM_B) != 0;
+	m_glAlphaMask = (m_desc.targets[0].colorWriteMask & CWM_A) != 0;
+}
+
+void BlendState::bind(bool bForce)
+{
+	RenderContext* pContext = RenderEngine::Instance()->getCurrentRenderWindow()->getContext();
+	BlendState* pCurState = pContext->getBlendState();
+	if (pCurState && !bForce)
+	{
+		const BlendStateDesc& curDesc = pCurState->getDesc();
+		if (m_desc.bA2C != curDesc.bA2C)
+		{
+			if (m_desc.bA2C)
+			{
+				glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			}
+			else
+			{
+				glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+			}
+		}
+
+		if (m_desc.targets[0].bBlend != curDesc.targets[0].bBlend)
+		{
+			if (m_desc.targets[0].bBlend)
+			{
+				glEnable(GL_BLEND);
+			}
+			else
+			{
+				glDisable(GL_BLEND);
+			}
+		}
+
+		if (m_desc.targets[0].blendOp != curDesc.targets[0].blendOp || 
+			m_desc.targets[0].alphaBlendOp != curDesc.targets[0].alphaBlendOp)
+		{
+			glBlendEquationSeparate(m_glBlendOp, m_glAlphaBlendOp);
+		}
+
+		if ((m_desc.targets[0].srcBlend != curDesc.targets[0].srcBlend) ||
+			(m_desc.targets[0].dstBlend != curDesc.targets[0].dstBlend) ||
+			(m_desc.targets[0].srcAlphaBlend != curDesc.targets[0].srcAlphaBlend) ||
+			(m_desc.targets[0].dstAlphaBlend != curDesc.targets[0].dstAlphaBlend))
+		{
+			glBlendFuncSeparate(m_glSrcBlend, m_glDstBlend, m_glSrcAlphaBlend, m_glDstAlphaBlend);
+		}
+
+		if (m_desc.targets[0].colorWriteMask != curDesc.targets[0].colorWriteMask)
+		{
+			glColorMask(m_glRedMask, m_glGreenMask, m_glBlueMask, m_glAlphaMask);
+		}
+
+		if (m_desc.blendFactor != curDesc.blendFactor)
+		{
+			glBlendColor((GLclampf)m_desc.blendFactor.r, (GLclampf)m_desc.blendFactor.g, (GLclampf)m_desc.blendFactor.b, (GLclampf)m_desc.blendFactor.a);
+		}
+	}
+	else
+	{
+		if (m_desc.bA2C)
+		{
+			glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		}
+		else
+		{
+			glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+		}
+
+		if (m_desc.targets[0].bBlend)
+		{
+			glEnable(GL_BLEND);
+		}
+		else
+		{
+			glDisable(GL_BLEND);
+		}
+
+		glBlendEquationSeparate(m_glBlendOp, m_glAlphaBlendOp);
+		glBlendFuncSeparate(m_glSrcBlend, m_glDstBlend, m_glSrcAlphaBlend, m_glDstAlphaBlend);
+		glColorMask(m_glRedMask, m_glGreenMask, m_glBlueMask, m_glAlphaMask);
+		glBlendColor((GLclampf)m_desc.blendFactor.r, (GLclampf)m_desc.blendFactor.g, (GLclampf)m_desc.blendFactor.b, (GLclampf)m_desc.blendFactor.a);
+	}
+}
+
+void BlendState::colorMaskGL()
+{
+	glColorMask(m_glRedMask, m_glGreenMask, m_glBlueMask, m_glAlphaMask);
+}
+
 SamplerState::SamplerState()
 {
 	create();
@@ -34,6 +259,11 @@ DepthStencilState::DepthStencilState(const DepthStencilStateDesc& desc)
 	: m_desc(desc)
 {
 	create();
+}
+
+DepthStencilState::~DepthStencilState()
+{
+	RenderEngine::Instance()->notifyDepthStencilStateReleased(this);
 }
 
 void DepthStencilState::create()

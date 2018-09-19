@@ -511,5 +511,43 @@ GLenum GLES3Mapping::mapStencilOperation(StencilOperation op)
 	}
 }
 
+GLenum GLES3Mapping::mapBlendOperation(BlendOperation op)
+{
+	switch (op)
+	{
+	case BOP_ADD:     return GL_FUNC_ADD;
+	case BOP_SUB:     return GL_FUNC_SUBTRACT;
+	case BOP_REV_SUB: return GL_FUNC_REVERSE_SUBTRACT;
+	default:
+		{
+			assert(false);
+			return GL_FUNC_ADD;
+		}
+	}
+}
+
+GLenum GLES3Mapping::mapBlendFactor(BlendFactor factor)
+{
+	switch (factor)
+	{
+	case BF_ZERO:                return GL_ZERO;
+	case BF_ONE:                 return GL_ONE;
+	case BF_SRC_ALPHA:           return GL_SRC_ALPHA;
+	case BF_DST_ALPHA:           return GL_DST_ALPHA;
+	case BF_ONE_MINUS_SRC_ALPHA: return GL_ONE_MINUS_SRC_ALPHA;
+	case BF_ONE_MINUS_DST_ALPHA: return GL_ONE_MINUS_DST_ALPHA;
+	case BF_SRC_COLOR:           return GL_SRC_COLOR;
+	case BF_DST_COLOR:           return GL_DST_COLOR;
+	case BF_ONE_MINUS_SRC_COLOR: return GL_ONE_MINUS_SRC_COLOR;
+	case BF_ONE_MINUS_DST_COLOR: return GL_ONE_MINUS_DST_COLOR;
+	case BF_SRC_ALPHA_SAT:       return GL_SRC_ALPHA_SATURATE;
+	default:
+		{
+			assert(false);
+			return GL_FUNC_ADD;
+		}
+	}
+}
+
 
 BLADE_NAMESPACE_END
