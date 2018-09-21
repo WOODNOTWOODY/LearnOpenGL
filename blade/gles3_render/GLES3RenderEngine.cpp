@@ -7,6 +7,7 @@ RenderEngine::RenderEngine()
 	: m_curRenderWindow(NULL)
 	, m_curGLProgram(0)
 	, m_curGLVAO(0)
+	, m_curGLFBO(0)
 	, m_glActiveTexUnit(0)
 {
 	for (uint32 i = 0; i < MAX_TEXTURE_UNIT_NUM; ++i)
@@ -83,6 +84,15 @@ void RenderEngine::bindGLVAO(GLuint hVAO)
 	}
 }
 
+void RenderEngine::bindGLFBO(GLuint hFBO)
+{
+	if (m_curGLFBO != hFBO)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, hFBO);
+		m_curGLFBO = hFBO;
+	}
+}
+
 void RenderEngine::bindGLProgram(GLuint hProgram)
 {
 	if (m_curGLProgram != hProgram)
@@ -116,10 +126,21 @@ void RenderEngine::setViewport(int left, int top, uint32 width, uint32 height)
 {
 	glViewport(left, top, width, height);
 }
-void RenderEngine::clearGLColor(float r, float g, float b, float a)
+
+void RenderEngine::clearGLColor(const Color& color)
 {
-	glClearColor(r, g, b, a);
+	glClearColor(color.r, color.g, color.b, color.a);
 }
+
+void RenderEngine::clearGLDepth(float depth)
+{
+	glClearDepthf(depth);
+}
+void RenderEngine::clearGLStencil(uint32 stencil)
+{
+	glClearStencil((GLint)stencil);
+}
+
 void RenderEngine::clear(uint32 flags)
 {
 	GLbitfield mask = 0;

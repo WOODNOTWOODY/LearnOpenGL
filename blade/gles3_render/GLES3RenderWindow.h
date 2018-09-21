@@ -3,6 +3,7 @@
 
 #include "camera/Camera.h"
 #include "GLES3RenderContext.h"
+#include "GLES3FrameBuffer.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -43,6 +44,9 @@ public:
 	inline uint32					getWidth() const { return m_width; }
 	inline uint32					getHeight() const { return m_height; }
 	inline RenderContext*		    getContext() const { return m_pContext; }
+	inline FrameBuffer*             getDefaultFrameBuffer() const { return m_pFrameBuffer; }
+	inline FrameBuffer*             getCurrentFrameBuffer() const { return m_pCurFrameBuffer; }
+	inline void                     setCurrentFrameBuffer(FrameBuffer* pFrameBuffer) { m_pCurFrameBuffer = pFrameBuffer; }
 	inline GLFWwindow*              getGLFWWindow() const { return m_glfwWindow; }
 
 private:
@@ -52,6 +56,8 @@ private:
 	uint32            m_width;
 	uint32            m_height;
 	RenderContext*    m_pContext;
+	FrameBuffer*      m_pFrameBuffer;
+	FrameBuffer*      m_pCurFrameBuffer;
 
 	GLFWwindow*       m_glfwWindow;
 };

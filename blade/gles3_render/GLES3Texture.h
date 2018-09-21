@@ -3,6 +3,7 @@
 
 #include "util/Buffer.h"
 #include "util/Element.h"
+#include "image/Image.h"
 
 BLADE_NAMESPACE_BEGIN
 
@@ -54,6 +55,7 @@ public:
 	inline uint32               getHeight() const { return m_height; }
 	inline uint32               getDepth() const { return m_depth; }
 	inline uint32               getMipmapNum() const { return m_mipmapNum; }
+	inline uint32               getSampleCount() const { return m_sampleCount; }
 	inline uint32               getSize() const { return m_size; }
 	inline Byte*                getBuffer() const { return m_buffer; }
 	inline SamplerState*        getSamplerState() const { return m_samplerState; }
@@ -69,6 +71,7 @@ private:
 	uint32           m_height;
 	uint32           m_depth;
 	uint32           m_mipmapNum;
+	uint32           m_sampleCount;
 	Byte*            m_buffer;
 	SamplerState*    m_samplerState;
 

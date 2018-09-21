@@ -9,13 +9,6 @@
 
 BLADE_NAMESPACE_BEGIN
 
-enum ClearMask
-{
-	CM_COLOR = 0x1,
-	CM_DEPTH = 0x2,
-	CM_STENCIL = 0x4,
-};
-
 class BLADE_GLES3RENDER_API RenderEngine : public Singleton < RenderEngine >
 {
 public:
@@ -29,10 +22,13 @@ public:
 	void                              destroy();
 	void                              render(RenderLayout* layout);
 	void                              setViewport(int left, int top, uint32 width, uint32 height);
-	void                              clearGLColor(float r, float g, float b, float a);
+	void                              clearGLColor(const Color& color);
+	void                              clearGLDepth(float depth);
+	void                              clearGLStencil(uint32 stencil);
 	void                              clear(uint32 flags);
 
 	void                              bindGLVAO(GLuint hVAO);
+	void                              bindGLFBO(GLuint hFBO);
 	void                              bindGLProgram(GLuint hProgram);
 	void                              bindGLBuffer(GLenum glTarget, GLuint hVBO);
 	void                              unbindGLBuffer(GLenum glTarget, GLuint hVBO);
@@ -70,7 +66,8 @@ public:
 	inline RasterizerState*           getRasterizerState() const { return m_pCurrentRS; }
 	inline BlendState*                getBlendState() const { return m_pCurrentBS; }
 	inline GLuint                     getCurrentProgramHandle() const { return m_curGLProgram; }
-	inline GLuint                     getCurrentVAOHandle() const { return m_curGLVAO; }
+	inline GLuint                     getCurrentGLVAO() const { return m_curGLVAO; }
+	inline GLuint                     getCurrentGLFBO() const { return m_curGLFBO; }
 	inline GLuint                     getActiveTextureUnit() const { return m_glActiveTexUnit; }
 
 private:
@@ -86,6 +83,7 @@ private:
 	BlendState*          m_pCurrentBS;
 
 	GLuint               m_curGLProgram;
+	GLuint               m_curGLFBO;
 	GLuint               m_curGLVAO;
 	GLuint				 m_texUnits[MAX_TEXTURE_UNIT_NUM][TT_COUNT];
 	GLuint				 m_glActiveTexUnit;
