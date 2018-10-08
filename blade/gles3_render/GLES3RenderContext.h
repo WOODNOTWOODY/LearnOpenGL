@@ -9,9 +9,10 @@ class RenderWindow;
 
 struct ContextOption
 {
-	bool        bShared;
 	bool        bBackground;
 	uint32      threadIdx;
+
+	ContextOption() : bBackground(false), threadIdx(0) {}
 };
 
 class BLADE_GLES3RENDER_API RenderContext
@@ -41,14 +42,31 @@ public:
 	inline bool               isBackground() const { return m_bBackground; }
 	inline ulong              getThreadId() const { return m_threadIdx; }
 
+#if (BLADE_PLATFORM == BLADE_PLATFORM_MAC_IOS)
+	inline                    getEAGLContext() const { return m_egalContext; }
+#else
+	inline EGLSurface         getEGLPBufferSurface() const { return m_eglPBuffSurface; }
+	inline EGLContext         getEGLContext() const { return m_eglContext; }
+#endif
+
 private:
 	RenderWindow*      m_pWindow;
-	bool               m_bShared;
 	bool               m_bBackground;
 	ulong              m_threadIdx;
 	RasterizerState*   m_pCurrentRS;
 	DepthStencilState* m_pCurrentDSS;
 	BlendState*        m_pCurrentBS;
+
+#if (BLADE_PLATFORM == BLADE_PLATFORM_MAC_IOS)
+	intptr             m_eaglContext;
+	intptr             m_eaglCurView;
+	intptr             m_eaglCurContext;
+#else
+	EGLSurface         m_eglPBuffSurface;
+	EGLContext         m_eglContext;
+	EGLSurface         m_eglCurSurface;
+	EGLContext         m_eglCurContext;
+#endif
 };
 
 BLADE_NAMESPACE_END

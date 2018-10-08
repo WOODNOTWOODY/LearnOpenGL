@@ -59,6 +59,9 @@ public:
 	void							  notifyBlendStateReleased(BlendState* pState);
 
 	inline RenderWindow*              getCurrentRenderWindow() const { return m_curRenderWindow; }
+	inline uint32					  getRenderWindowCount() const { return 0; }
+	inline RenderWindow*              getRenderWindow(uint32 idx) const { return NULL; }
+
 	inline DepthStencilState*         getDefaultDepthStencilState() const { return m_pDefaultDSS; }
 	inline RasterizerState*           getDefaultRasterizerState() const { return m_pDefaultRS; }
 	inline BlendState*                getDefaultBlendState() const { return m_pDefaultBS; }

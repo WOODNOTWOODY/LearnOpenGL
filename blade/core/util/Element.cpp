@@ -4,8 +4,6 @@
 
 BLADE_NAMESPACE_BEGIN
 
-#define TOSTR(s) #s
-
 PixelBox::PixelBox() :
 left(0), top(0), right(1), bottom(1), front(0), back(1),
 format(EF_UNKNOWN)
@@ -116,88 +114,88 @@ std::string ElementUtil::GetFormatName(ElementFormat format)
 {
 	switch (format)
 	{
-	case EF_UNKNOWN:		return TOSTR(EF_UNKNOWN);
+	case EF_UNKNOWN:		return BALDE_TOSTR(EF_UNKNOWN);
 
-	case EF_R8:				return TOSTR(EF_R8);
-	case EF_R8_SNORM:		return TOSTR(EF_R8_SNORM);
-	case EF_R8_UINT:		return TOSTR(EF_R8_UINT);
-	case EF_R8_SINT:		return TOSTR(EF_R8_SINT);
+	case EF_R8:				return BALDE_TOSTR(EF_R8);
+	case EF_R8_SNORM:		return BALDE_TOSTR(EF_R8_SNORM);
+	case EF_R8_UINT:		return BALDE_TOSTR(EF_R8_UINT);
+	case EF_R8_SINT:		return BALDE_TOSTR(EF_R8_SINT);
 
-	case EF_A8:				return TOSTR(EF_A8);
+	case EF_A8:				return BALDE_TOSTR(EF_A8);
 
-	case EF_RG8:			return TOSTR(EF_RG8);
-	case EF_RG8_SNORM:		return TOSTR(EF_RG8_SNORM);
-	case EF_RG8_UINT:		return TOSTR(EF_RG8_UINT);
-	case EF_RG8_SINT:		return TOSTR(EF_RG8_SINT);
+	case EF_RG8:			return BALDE_TOSTR(EF_RG8);
+	case EF_RG8_SNORM:		return BALDE_TOSTR(EF_RG8_SNORM);
+	case EF_RG8_UINT:		return BALDE_TOSTR(EF_RG8_UINT);
+	case EF_RG8_SINT:		return BALDE_TOSTR(EF_RG8_SINT);
 
-	case EF_RGB8:			return TOSTR(EF_RGB8);
-	case EF_RGB8_SNORM:		return TOSTR(EF_RGB8_SNORM);
-	case EF_RGB8_UINT:		return TOSTR(EF_RGB8_UINT);
-	case EF_RGB8_SINT:		return TOSTR(EF_RGB8_SINT);
+	case EF_RGB8:			return BALDE_TOSTR(EF_RGB8);
+	case EF_RGB8_SNORM:		return BALDE_TOSTR(EF_RGB8_SNORM);
+	case EF_RGB8_UINT:		return BALDE_TOSTR(EF_RGB8_UINT);
+	case EF_RGB8_SINT:		return BALDE_TOSTR(EF_RGB8_SINT);
 
-	case EF_BGR8:			return TOSTR(EF_BGR8);
+	case EF_BGR8:			return BALDE_TOSTR(EF_BGR8);
 
-	case EF_RGBA8:			return TOSTR(EF_RGBA8);
-	case EF_RGBA8_SNORM:	return TOSTR(EF_RGBA8_SNORM);
-	case EF_RGBA8_UINT:		return TOSTR(EF_RGBA8_UINT);
-	case EF_RGBA8_SINT:		return TOSTR(EF_RGBA8_SINT);
+	case EF_RGBA8:			return BALDE_TOSTR(EF_RGBA8);
+	case EF_RGBA8_SNORM:	return BALDE_TOSTR(EF_RGBA8_SNORM);
+	case EF_RGBA8_UINT:		return BALDE_TOSTR(EF_RGBA8_UINT);
+	case EF_RGBA8_SINT:		return BALDE_TOSTR(EF_RGBA8_SINT);
 
-	case EF_BGRA8:			return TOSTR(EF_BGRA8);
+	case EF_BGRA8:			return BALDE_TOSTR(EF_BGRA8);
 
-	case EF_R16:			return TOSTR(EF_R16);
-	case EF_R16_SNORM:		return TOSTR(EF_R16_SNORM);
-	case EF_R16_UINT:		return TOSTR(EF_R16_UINT);
-	case EF_R16_SINT:		return TOSTR(EF_R16_SINT);
-	case EF_R16_FLOAT:		return TOSTR(EF_R16_FLOAT);
+	case EF_R16:			return BALDE_TOSTR(EF_R16);
+	case EF_R16_SNORM:		return BALDE_TOSTR(EF_R16_SNORM);
+	case EF_R16_UINT:		return BALDE_TOSTR(EF_R16_UINT);
+	case EF_R16_SINT:		return BALDE_TOSTR(EF_R16_SINT);
+	case EF_R16_FLOAT:		return BALDE_TOSTR(EF_R16_FLOAT);
 
-	case EF_RG16:			return TOSTR(EF_RG16);
-	case EF_RG16_SNORM:		return TOSTR(EF_RG16_SNORM);
-	case EF_RG16_UINT:		return TOSTR(EF_RG16_UINT);
-	case EF_RG16_SINT:		return TOSTR(EF_RG16_SINT);
-	case EF_RG16_FLOAT:		return TOSTR(EF_RG16_FLOAT);
+	case EF_RG16:			return BALDE_TOSTR(EF_RG16);
+	case EF_RG16_SNORM:		return BALDE_TOSTR(EF_RG16_SNORM);
+	case EF_RG16_UINT:		return BALDE_TOSTR(EF_RG16_UINT);
+	case EF_RG16_SINT:		return BALDE_TOSTR(EF_RG16_SINT);
+	case EF_RG16_FLOAT:		return BALDE_TOSTR(EF_RG16_FLOAT);
 
-	case EF_RGB16:			return TOSTR(EF_RGB16);
-	case EF_RGB16_SNORM:	return TOSTR(EF_RGB16_SNORM);
-	case EF_RGB16_UINT:		return TOSTR(EF_RGB16_UINT);
-	case EF_RGB16_SINT:		return TOSTR(EF_RGB16_SINT);
-	case EF_RGB16_FLOAT:	return TOSTR(EF_RGB16_FLOAT);
+	case EF_RGB16:			return BALDE_TOSTR(EF_RGB16);
+	case EF_RGB16_SNORM:	return BALDE_TOSTR(EF_RGB16_SNORM);
+	case EF_RGB16_UINT:		return BALDE_TOSTR(EF_RGB16_UINT);
+	case EF_RGB16_SINT:		return BALDE_TOSTR(EF_RGB16_SINT);
+	case EF_RGB16_FLOAT:	return BALDE_TOSTR(EF_RGB16_FLOAT);
 
-	case EF_RGBA16:			return TOSTR(EF_RGBA16);
-	case EF_RGBA16_SNORM:	return TOSTR(EF_RGBA16_SNORM);
-	case EF_RGBA16_UINT:	return TOSTR(EF_RGBA16_UINT);
-	case EF_RGBA16_SINT:	return TOSTR(EF_RGBA16_SINT);
-	case EF_RGBA16_FLOAT:	return TOSTR(EF_RGBA16_FLOAT);
+	case EF_RGBA16:			return BALDE_TOSTR(EF_RGBA16);
+	case EF_RGBA16_SNORM:	return BALDE_TOSTR(EF_RGBA16_SNORM);
+	case EF_RGBA16_UINT:	return BALDE_TOSTR(EF_RGBA16_UINT);
+	case EF_RGBA16_SINT:	return BALDE_TOSTR(EF_RGBA16_SINT);
+	case EF_RGBA16_FLOAT:	return BALDE_TOSTR(EF_RGBA16_FLOAT);
 
-	case EF_R32_UINT:		return TOSTR(EF_R32_UINT);
-	case EF_R32_SINT:		return TOSTR(EF_R32_SINT);
-	case EF_R32_FLOAT:		return TOSTR(EF_R32_FLOAT);
+	case EF_R32_UINT:		return BALDE_TOSTR(EF_R32_UINT);
+	case EF_R32_SINT:		return BALDE_TOSTR(EF_R32_SINT);
+	case EF_R32_FLOAT:		return BALDE_TOSTR(EF_R32_FLOAT);
 
-	case EF_RG32_UINT:		return TOSTR(EF_RG32_UINT);
-	case EF_RG32_SINT:		return TOSTR(EF_RG32_SINT);
-	case EF_RG32_FLOAT:		return TOSTR(EF_RG32_FLOAT);
+	case EF_RG32_UINT:		return BALDE_TOSTR(EF_RG32_UINT);
+	case EF_RG32_SINT:		return BALDE_TOSTR(EF_RG32_SINT);
+	case EF_RG32_FLOAT:		return BALDE_TOSTR(EF_RG32_FLOAT);
 
-	case EF_RGB32_UINT:		return TOSTR(EF_RGB32_UINT);
-	case EF_RGB32_SINT:		return TOSTR(EF_RGB32_SINT);
-	case EF_RGB32_FLOAT:	return TOSTR(EF_RGB32_FLOAT);
+	case EF_RGB32_UINT:		return BALDE_TOSTR(EF_RGB32_UINT);
+	case EF_RGB32_SINT:		return BALDE_TOSTR(EF_RGB32_SINT);
+	case EF_RGB32_FLOAT:	return BALDE_TOSTR(EF_RGB32_FLOAT);
 
-	case EF_RGBA32_UINT:	return TOSTR(EF_RGBA32_UINT);
-	case EF_RGBA32_SINT:	return TOSTR(EF_RGBA32_SINT);
-	case EF_RGBA32_FLOAT:	return TOSTR(EF_RGBA32_FLOAT);
+	case EF_RGBA32_UINT:	return BALDE_TOSTR(EF_RGBA32_UINT);
+	case EF_RGBA32_SINT:	return BALDE_TOSTR(EF_RGBA32_SINT);
+	case EF_RGBA32_FLOAT:	return BALDE_TOSTR(EF_RGBA32_FLOAT);
 
-	case EF_R5G6B5:			return TOSTR(EF_R5G6B5);
-	case EF_RGBA4:			return TOSTR(EF_RGBA4);
-	case EF_RGB5A1:			return TOSTR(EF_RGB5A1);
-	case EF_RGB10A2:		return TOSTR(EF_RGB10A2);
-	case EF_RGB10A2_UINT:	return TOSTR(EF_RGB10A2_UINT);
+	case EF_R5G6B5:			return BALDE_TOSTR(EF_R5G6B5);
+	case EF_RGBA4:			return BALDE_TOSTR(EF_RGBA4);
+	case EF_RGB5A1:			return BALDE_TOSTR(EF_RGB5A1);
+	case EF_RGB10A2:		return BALDE_TOSTR(EF_RGB10A2);
+	case EF_RGB10A2_UINT:	return BALDE_TOSTR(EF_RGB10A2_UINT);
 
-	case EF_D16:			return TOSTR(EF_D16);
-	case EF_D24:			return TOSTR(EF_D24);
-	case EF_D24S8:			return TOSTR(EF_D24S8);
-	case EF_D32_FLOAT:		return TOSTR(EF_D32_FLOAT);
+	case EF_D16:			return BALDE_TOSTR(EF_D16);
+	case EF_D24:			return BALDE_TOSTR(EF_D24);
+	case EF_D24S8:			return BALDE_TOSTR(EF_D24S8);
+	case EF_D32_FLOAT:		return BALDE_TOSTR(EF_D32_FLOAT);
 
 	default:
 	{
-		return TOSTR(EF_UNKNOWN);
+		return BALDE_TOSTR(EF_UNKNOWN);
 	}
 	}
 }

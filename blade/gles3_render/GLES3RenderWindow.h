@@ -38,6 +38,7 @@ public:
 	void                            processInput(Camera* camera, float deltaTime);
 	void                            pollEvents();
 
+	inline bool					    isMainWindow() const { return false; }
 	inline const std::string&		getName() const { return m_name; }
 	inline uint32					getLeft() const { return m_left; }
 	inline uint32					getTop() const { return m_top; }
@@ -47,7 +48,16 @@ public:
 	inline FrameBuffer*             getDefaultFrameBuffer() const { return m_pFrameBuffer; }
 	inline FrameBuffer*             getCurrentFrameBuffer() const { return m_pCurFrameBuffer; }
 	inline void                     setCurrentFrameBuffer(FrameBuffer* pFrameBuffer) { m_pCurFrameBuffer = pFrameBuffer; }
-	inline GLFWwindow*              getGLFWWindow() const { return m_glfwWindow; }
+	
+#if (BLADE_PLATFORM == BLADE_PLATFORM_MAC_IOS)
+	bool				            renderbufferStorage();
+	inline intptr		            getEAGLView() const { return m_eaglView; }
+	inline intptr		            getEAGLContext() const { return m_eaglContext; }
+#else
+	inline EGLDisplay	            getEGLDisplay() const { return m_eglDisplay; }
+	inline EGLConfig	            getEGLConfig() const { return m_eglConfig; }
+	inline EGLSurface	            getEGLSurface() const { return m_eglSurface; }
+#endif
 
 private:
 	std::string       m_name;
@@ -59,7 +69,14 @@ private:
 	FrameBuffer*      m_pFrameBuffer;
 	FrameBuffer*      m_pCurFrameBuffer;
 
-	GLFWwindow*       m_glfwWindow;
+#if (BLADE_PLATFORM == BLADE_PLATFORM_MAC_IOS)
+	intptr			  m_eaglView;
+	intptr			  m_eaglContext;
+#else
+	EGLDisplay		  m_eglDisplay;
+	EGLConfig		  m_eglConfig;
+	EGLSurface		  m_eglSurface;
+#endif
 };
 
 BLADE_NAMESPACE_END

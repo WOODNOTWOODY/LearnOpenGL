@@ -52,6 +52,8 @@
 #define BLADE_FREE(ptr) free(ptr)
 #define BLADE_SAFE_FREE(ptr) if(ptr) { free(ptr); (ptr) = NULL; }
 
+#define BALDE_TOSTR(s) #s
+
 #include <string>
 #include <vector>
 #include <map>
