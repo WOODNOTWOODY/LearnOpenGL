@@ -9,6 +9,15 @@ message(STATUS "Configuring build system...")
 message(STAUTS "CMake version: ${CMAKE_VERSION}")
 
 set(BLADE_PLATFORM_WIN32 FALSE)
+set(BLADE_PLATFORM_ANDROID FALSE)
+set(BLADE_PLATFORM_IOS FALSE)
+set(BLADE_PLATFORM_OSX FALSE)
+
+if(CPUX64)
+	set(BLADE_CPU_X64 TRUE)
+else()
+	set(BLADE_CPU_X64 FALSE)
+endif()
 
 project(Blade)
 
